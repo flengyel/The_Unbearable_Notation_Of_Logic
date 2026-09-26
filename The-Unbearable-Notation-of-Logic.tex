@@ -520,7 +520,7 @@ T_\Sigma Z.
 \]
 
 Let \(\upsilon:Z\to T_\Sigma W\). The associativity of iterated syntactic
-substitution is literal associativity in the Kleisli category: the following
+substitution is associativity of composition in the Kleisli category: the following
 square commutes in \(\mathbf{Kl}(T_\Sigma)\), where each displayed arrow is a
 Kleisli arrow:
 
@@ -912,12 +912,12 @@ introduced above, the same lemma is the calculational identity
 In arithmetic with \(<\), let \(\varphi\) be \((\exists y)\,x<y\), with
 \(\operatorname{FV}(\varphi)=\{x\}\), and substitute the variable \(y\) for \(x\).
 Capture-avoiding substitution yields
-\(\varphi[x:=y]=(\exists z)\,y<z\), with \(z\) fresh. Literal textual
-replacement would yield \((\exists y)\,y<y\), changing the meaning. If
-\(\atsign(y)=3\) in \(\mathbb N\), then
+\(\varphi[x:=y]=(\exists z)\,y<z\), with \(z\) fresh. Textual
+replacement without renaming the bound variable would yield \((\exists y)\,y<y\), 
+changing the meaning. If \(\atsign(y)=3\) in \(\mathbb N\), then
 \((\varphi\vert_y^x)\,\atsign\Longleftrightarrow
 \varphi\,(\atsign\vert_{\atsign\,y}^x)\), and both sides are true; the formula produced
-by literal replacement is false.
+by replacement without renaming is false.
 
 Satisfaction also has the locality property. If assignments
 \(\alpha,\alpha':X\to A\) agree on every free variable of \(\varphi\),
@@ -2138,7 +2138,7 @@ For \(\mathcal E=\mathbf{Set}\) and \(V=1\), the subobject
 locus is a subobject of the stage \(V\); global truth values are arrows
 \(1\to\Omega_{\mathcal E}\).
 
-\subsection{A literal spectrum example}
+\subsection{A spectrum example}
 
 The comparison with algebraic geometry can be made exact. Let \(R\) be a
 commutative ring. Introduce one proposition \(D(f)\) for each \(f\in R\) and
@@ -3375,7 +3375,7 @@ $\Con^{*}$. Thus
 Set the numerical function to $0$ on inputs outside its prescribed
 syntactic domain. Feferman makes exactly the distinction between
 consistency formulas and represented code-producing functions on
-p.~269 of \cite{F62}. Literal output codes depend on the selected
+p.~269 of \cite{F62}. The output G\"odel numbers depend on the selected
 definition of the consistency formula.
 
 \subsubsection*{Adding a numeral instance as an axiom}
