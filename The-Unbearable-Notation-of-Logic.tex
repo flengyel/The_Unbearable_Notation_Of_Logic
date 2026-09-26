@@ -1,0 +1,3534 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,tabularx}
+\usepackage{tikz-cd}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\llbracket}{\mathopen{[\mkern-3mu[}}
+\newcommand{\rrbracket}{\mathclose{]\mkern-3mu]}}
+\newcommand{\atsign}{\mathord{@}}
+\newcommand{\finord}[1]{\underline{#1}}
+\newcommand{\DP}{Do\v{s}en--Petri\'{c}}
+\newcommand{\tightlist}{\setlength{\itemsep}{0pt}%
+  \setlength{\parskip}{0pt}}
+
+% Arithmetic notation used in Appendix A.
+\newcommand{\N}{\mathbb N}
+\newcommand{\LA}{L_{\mathrm A}}
+\newcommand{\pair}[2]{\pi\bigl(#1,#2\bigr)}
+\newcommand{\ctag}[2]{c\bigl(#1,#2\bigr)}
+\newcommand{\PA}{\mathrm{PA}^{*}}
+\newcommand{\num}{\operatorname{num}}
+\newcommand{\Num}{\operatorname{Num}}
+\newcommand{\scod}{\operatorname{sc}}
+\newcommand{\Sc}{\operatorname{Sc}}
+\newcommand{\sbop}{\operatorname{sb}}
+\newcommand{\Sb}{\operatorname{Sb}}
+\newcommand{\Prf}{\operatorname{Prf}}
+\newcommand{\Prov}{\operatorname{Pr}}
+\newcommand{\Con}{\operatorname{Con}}
+\newcommand{\FV}{\operatorname{FV}}
+\newcommand{\Q}{\mathsf Q}
+\newcommand{\h}{\mathsf h}
+\newcommand{\code}[1]{\#\bigl(#1\bigr)}
+\newcommand{\quo}[1]{\ulcorner #1\urcorner}
+\newcommand{\bn}[1]{\overline{#1}}
+\newcommand{\flatof}[1]{\bigl(#1\bigr)^{\flat}}
+\newcommand{\defeq}{\mathrel{:=}}
+\newtheorem{proposition}{Proposition}[section]
+\theoremstyle{definition}
+\newtheorem{example}[proposition]{Example}
+
+\setlist[itemize]{leftmargin=*,topsep=0.5\baselineskip}
+\setlength{\emergencystretch}{3em}
+\allowdisplaybreaks
+
+\hypersetup{
+  pdftitle={The Unbearable Notation of Logic},
+  pdfsubject={Categorical structure and at-sign calculation for first-order terms, formulas, substitution, evaluation, and language expansion},
+  pdfkeywords={first-order logic, term monad, Kleisli category, Eilenberg--Moore algebra, Dosen--Petric substitution, occurrence maps, Lawvere theory, classifying topos, at-sign notation, evaluation pairing, arithmetization, Feferman, numeral substitution}
+}
+
+\title{The Unbearable Notation of Logic}
+%\subtitle{Categorical Structure and the \texorpdfstring{$\atsign$}{@}-Calculus}
+\author{Florian Lengyel}
+%\email{flengyel@gradcenter.cuny.edu}
+\date{September 26, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Standard presentations of first-order syntax and semantics routinely use
+similar brackets, superscripts, and substitution expressions for several
+differently typed operations. Fix a first-order language \(\mathcal L\) with
+functional signature \(\Sigma\), sets \(X,Y\) of variables, and an
+\(\mathcal L\)-structure with domain \(A\). Four relevant types are:
+\[
+X\to T_\Sigma Y,\qquad X\to A,\qquad
+T_\Sigma X\to A,\qquad
+\operatorname{Form}_{\mathcal L}(X)\times A^X\to\mathbf 2.
+\]
+Here \(A^X\) is the set of functions \(X\to A\), and
+\(\mathbf2=\{\bot,\top\}\) is the set of truth values. The four displayed maps
+represent syntactic substitution, assignment, term evaluation under an
+assignment, and satisfaction. Readers must ordinarily infer from convention
+which operation an expression denotes.
+
+This note presents two complementary descriptions of the operations. The categorical
+description organizes terms into a monad, substitutions into Kleisli arrows,
+and functional structures into Eilenberg--Moore algebras. The $\atsign$-calculus
+uses prefix $\atsign$ for term evaluation and postfix $\atsign$ for satisfaction;
+it is the working notation for calculations. The categorical notation records
+compositional structure, while the $\atsign$-notation performs the corresponding
+term-evaluation and satisfaction calculations. Adjoining names for the elements of a structure changes the
+term functor from $T_\Sigma X$ to $T_\Sigma(A+X)$ and turns assignments into
+substitutions by ground terms. A finite-occurrence construction of \DP\ records
+how generalized composition routes repeated formula-pattern occurrences.
+Functorial semantics then extends the categorical
+description to internal models and, for geometric theories, to models as
+generalized points of a classifying topos. An appendix separates
+expressions, codes, and numeral-valued terms in Feferman's
+arithmetization conventions.
+\end{abstract}
+
+First-order syntax and semantics involve terms, syntactic substitutions,
+assignments, term evaluation, formulas, and satisfaction. Textbook notation
+often leaves the types distinguishing those six ingredients to convention.
+The term-monad description below explains how the ingredients compose; the
+$\atsign$-calculus makes their substitution laws concise enough for routine
+calculation. The categorical diagrams state the structural laws, and the
+$\atsign$-identities state their calculational forms.
+
+The note uses the familiar inductive definitions of terms, formulas,
+evaluation, and satisfaction. Categorical notation records their compositional
+laws, and the $\atsign$-calculus supplies their working calculation notation.
+A later section adds the \DP\ occurrence maps, which record how
+formula-pattern substitution routes the individual occurrences of the outer
+pattern's formal arguments.
+
+\section{Categorical vocabulary}\label{categorical-vocabulary}
+
+A \textbf{category} consists of objects and arrows between them. For every
+object \(X\) there is an identity arrow \(1_X:X\to X\), and composable arrows
+\(f:X\to Y\) and \(g:Y\to Z\) have a composite
+\(g\circ f:X\to Z\). Composition is associative, and the identity laws are
+\(f\circ1_X=f=1_Y\circ f\). The category \(\mathbf{Set}\) has sets as objects
+and functions as arrows.
+
+A \textbf{functor} \(F:\mathcal C\to\mathcal D\) sends objects to
+objects and arrows to arrows while preserving identities and
+composition. An \textbf{endofunctor} is a functor from a category to
+itself.
+
+\Needspace{8\baselineskip}
+Given functors \(F,G:\mathcal C\to\mathcal D\), a \textbf{natural
+transformation} \(\theta:F\Rightarrow G\) assigns an arrow
+\(\theta_X:FX\to GX\) to every object \(X\) so that, for every
+\(u:X\to Y\), the following square commutes:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+F X \arrow[r,"\theta_X"] \arrow[d,"F(u)"'] &
+G X \arrow[d,"G(u)"] \\
+F Y \arrow[r,"\theta_Y"'] &
+G Y
+\end{tikzcd}
+\]
+
+Equivalently, \(G(u)\circ\theta_X=\theta_Y\circ F(u)\): applying
+\(\theta\) is compatible with changing \(X\) by \(u\). The unit of the term
+monad, defined in Section~\ref{the-term-monad}, is a natural transformation.
+Its naturality says that mapping variable leaves along \(u:X\to Y\) commutes
+with regarding those variables as terms.
+
+A \textbf{monad} on a category \(\mathcal C\) is an endofunctor
+\(T:\mathcal C\to\mathcal C\) together with natural transformations
+\(\eta:1_{\mathcal C}\Rightarrow T\) and \(\mu:T^2\Rightarrow T\), called
+the unit and multiplication. Here \(1_{\mathcal C}\) is the identity functor,
+which fixes every object and arrow, while \(T^2=T\circ T\) and
+\(T^3=T\circ T\circ T\) are iterated applications of \(T\). The monad laws
+are typed by the following commutative diagrams. For every object \(X\), the
+two unit triangles are
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T X \arrow[r,"\eta_{T X}"] \arrow[dr,"1_{T X}"'] &
+T^2X \arrow[d,"\mu_X"] \\
+& T X
+\end{tikzcd}
+\qquad
+\begin{tikzcd}[row sep=large,column sep=large]
+T X \arrow[r,"T(\eta_X)"] \arrow[dr,"1_{T X}"'] &
+T^2X \arrow[d,"\mu_X"] \\
+& T X,
+\end{tikzcd}
+\]
+
+and associativity is the square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T^3X \arrow[r,"T(\mu_X)"] \arrow[d,"\mu_{T X}"'] &
+T^2X \arrow[d,"\mu_X"] \\
+T^2X \arrow[r,"\mu_X"'] & T X.
+\end{tikzcd}
+\]
+
+For the term monad below, \(T\) forms terms, \(\eta\) regards a variable as a
+term, and \(\mu\) removes one formal term layer. Section~\ref{the-term-monad}
+defines this operation recursively and computes it on an explicit term of
+terms.
+
+The \textbf{Kleisli category} \(\mathbf{Kl}(T)\) of a monad \(T\) has
+the same objects as \(\mathcal C\). An arrow from \(X\) to \(Y\) in
+\(\mathbf{Kl}(T)\) is an ordinary arrow \(X\to TY\) in \(\mathcal C\).
+The identity on \(X\) is \(\eta_X:X\to TX\). If
+\(\sigma:X\to TY\) and \(\tau:Y\to TZ\), their Kleisli composite is
+\(\tau\star\sigma=\mu_Z\circ T(\tau)\circ\sigma:X\to TZ\). For the term
+monad, Kleisli arrows are precisely simultaneous syntactic substitutions.
+
+An \textbf{Eilenberg--Moore algebra} for a monad \(T\) is an object
+\(A\) equipped with an arrow \(a:TA\to A\) for which the following unit
+triangle and multiplication square commute:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+A \arrow[r,"\eta_A"] \arrow[dr,"1_A"'] & T A \arrow[d,"a"] \\
+& A
+\end{tikzcd}
+\qquad
+\begin{tikzcd}[row sep=large,column sep=large]
+T^2A \arrow[r,"T(a)"] \arrow[d,"\mu_A"'] &
+T A \arrow[d,"a"] \\
+T A \arrow[r,"a"'] & A.
+\end{tikzcd}
+\]
+
+It specifies a coherent way to interpret or evaluate the formal expressions
+collected by \(T\). A homomorphism \(h:(A,a)\to(B,b)\) of such algebras is
+an arrow \(h:A\to B\) for which the following square commutes:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T A \arrow[r,"T(h)"] \arrow[d,"a"'] & T B \arrow[d,"b"] \\
+A \arrow[r,"h"'] & B
+\end{tikzcd}
+\]
+
+The algebras and their homomorphisms form the
+\textbf{Eilenberg--Moore category} \(\mathcal C^T\). For the term monad, its
+objects are the ordinary algebras interpreting the function symbols of a
+signature.
+
+For monads \(T,S\) on the same category, a \textbf{monad morphism}
+\(j:T\Rightarrow S\) is a natural transformation for which the following
+unit triangle and multiplication rectangle commute for every \(X\):
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+X \arrow[r,"\eta_X^T"] \arrow[dr,"\eta_X^S"'] &
+T X \arrow[d,"j_X"] \\
+& S X
+\end{tikzcd}
+\]
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T^2X \arrow[r,"j_{T X}"] \arrow[d,"\mu_X^T"'] &
+S T X \arrow[r,"S(j_X)"] & S^2X \arrow[d,"\mu_X^S"] \\
+T X \arrow[rr,"j_X"'] && S X.
+\end{tikzcd}
+\]
+
+Thus \(j\) translates \(T\)-expressions into \(S\)-expressions while
+preserving variables and substitution.
+
+\section{Languages and their functional
+signatures}\label{languages-and-their-functional-signatures}
+
+Let \(\mathcal L\) be a single-sorted first-order language. Separate its
+nonlogical symbols into:
+
+\begin{itemize}
+\tightlist
+\item
+  a finitary functional signature \(\Sigma\), including constant symbols
+  as nullary function symbols; and
+\item
+  a family \(\mathcal R\) of relation symbols with specified arities.
+\end{itemize}
+
+The term construction depends only on \(\Sigma\). Relation symbols enter
+later, when formulas and satisfaction are defined.
+
+For each set \(X\) of variables, let \(T_\Sigma X\) be the set of
+\(\Sigma\)-terms whose variables belong to \(X\). Thus \(T_\Sigma X\) is
+generated by variables \(x\in X\) and expressions
+\(f(t_1,\ldots,t_n)\), where \(f\in\Sigma\) has arity \(n\) and each
+\(t_i\) belongs to \(T_\Sigma X\).
+
+A map \(u:X\to Y\) sends each variable leaf \(x\) to the variable leaf
+\(u(x)\) and induces \(T_\Sigma u:T_\Sigma X\to T_\Sigma Y\), recursively
+defined by
+
+\[
+T_\Sigma u(\eta_X(x))=\eta_Y(u(x)),\qquad
+T_\Sigma u\bigl(f(t_1,\ldots,t_n)\bigr)
+=f\bigl(T_\Sigma u(t_1),\ldots,T_\Sigma u(t_n)\bigr).
+\]
+
+For every \(v:Y\to Z\), structural induction yields
+\(T_\Sigma(1_X)=1_{T_\Sigma X}\) and
+\(T_\Sigma(v\circ u)=T_\Sigma v\circ T_\Sigma u\). Hence \(T_\Sigma\) is an
+endofunctor on \(\mathbf{Set}\).
+
+\section{The term monad}\label{the-term-monad}
+
+The endofunctor \(T_\Sigma\) has a canonical monad structure. Its unit
+\(\eta_X:X\to T_\Sigma X\) sends a variable to the corresponding variable
+term. To define its multiplication, first observe that
+\(T_\Sigma^2X=T_\Sigma(T_\Sigma X)\). An element of this set is an outer
+\(\Sigma\)-term whose variable labels are themselves elements of
+\(T_\Sigma X\). If \(p\in T_\Sigma X\), then
+\(\eta_{T_\Sigma X}(p)\) is the outer variable labelled by the entire inner
+term \(p\).
+
+The multiplication \(\mu_X:T_\Sigma(T_\Sigma X)\to T_\Sigma X\) is defined
+by structural recursion:
+
+\[
+\begin{aligned}
+\mu_X\bigl(\eta_{T_\Sigma X}(p)\bigr)&=p,
+&&p\in T_\Sigma X,\\
+\mu_X\bigl(f(U_1,\ldots,U_n)\bigr)
+&=f\bigl(\mu_X(U_1),\ldots,\mu_X(U_n)\bigr),
+&&f\in\Sigma\text{ of arity }n.
+\end{aligned}
+\]
+
+Every term has exactly one outermost constructor: it is either a variable term
+or an expression \(f(U_1,\ldots,U_n)\). The two clauses therefore assign
+exactly one value to every element of \(T_\Sigma(T_\Sigma X)\), and structural
+recursion yields a function \(\mu_X\) with the displayed type. The operation is
+often called \emph{flattening}: it replaces every outer variable by the inner
+term labelling that variable and preserves every operation symbol.
+
+\paragraph{Example: flattening a term of terms.}
+Use a signature containing the nullary symbol \(1\), the unary successor
+symbol \(S\), and the binary symbols \(+\) and \(\cdot\), and let
+\(X=\{x,y\}\). In
+\(T_\Sigma X\), put \(p=x+1\), \(q=S(y)\), and \(r=x\cdot y\), and abbreviate
+
+\[
+\widehat p=\eta_{T_\Sigma X}(p),\qquad
+\widehat q=\eta_{T_\Sigma X}(q),\qquad
+\widehat r=\eta_{T_\Sigma X}(r).
+\]
+
+The hats are outer variable terms labelled by the entire terms \(p,q,r\).
+Consequently,
+
+\[
+U=\widehat p+\bigl(\widehat q\cdot\widehat r\bigr)
+\in T_\Sigma(T_\Sigma X).
+\]
+
+The recursive clauses calculate its value one constructor at a time:
+
+\[
+\begin{aligned}
+\mu_X(U)
+&=\mu_X(\widehat p)
+  +\bigl(\mu_X(\widehat q)\cdot\mu_X(\widehat r)\bigr)\\
+&=p+(q\cdot r)\\
+&=(x+1)+\bigl(S(y)\cdot(x\cdot y)\bigr).
+\end{aligned}
+\]
+
+The first recursive clause removes each hat; the second rebuilds the displayed
+sum and product around the resulting inner terms. Thus ``flatten'' names the
+fully specified recursive operation above.
+
+The unit law \(\mu_X\circ\eta_{T_\Sigma X}=1_{T_\Sigma X}\) removes an outer
+variable labelled by a whole term. The other unit law
+\(\mu_X\circ T_\Sigma(\eta_X)=1_{T_\Sigma X}\) replaces every variable by
+its corresponding variable term. The associativity square says that a
+three-layer term yields the same ordinary term whether the inner two layers or
+the outer two layers are reduced first. Structural induction proves both unit
+laws, associativity, and the naturality of \(\eta\) and \(\mu\). For example, if
+\(A=\widehat p+\widehat q\) and \(B=\widehat r\) are elements of
+\(T_\Sigma^2X\), then
+\(W=\eta_{T_\Sigma^2X}(A)\cdot\eta_{T_\Sigma^2X}(B)\) belongs to
+\(T_\Sigma^3X\). Put
+\(\widehat{p+q}=\eta_{T_\Sigma X}(p+q)\). The two paths around the
+associativity square are the explicit calculations
+
+\[
+\begin{aligned}
+(\mu_X\circ T_\Sigma\mu_X)(W)
+  &=\mu_X\bigl(\widehat{p+q}\cdot\widehat r\bigr)
+   =(p+q)\cdot r,\\
+(\mu_X\circ\mu_{T_\Sigma X})(W)
+  &=\mu_X(A\cdot B)
+   =(p+q)\cdot r.
+\end{aligned}
+\]
+
+\section{Syntactic substitution as Kleisli
+composition}\label{syntactic-substitution-as-kleisli-composition}
+
+A simultaneous substitution from a variable set \(X\) into terms over a
+variable set \(Y\) is a family \((s_x)_{x\in X}\), with
+\(s_x\in T_\Sigma Y\). Such a family supplies exactly one term \(s_x\) for
+every \(x\in X\); consequently, the rule \(x\mapsto s_x\) is a total,
+single-valued function. Denote it by
+
+\[
+\sigma:X\longrightarrow T_\Sigma Y,
+\qquad \sigma(x)=s_x.
+\]
+
+For the familiar finite notation, let \(V\) be a variable set, let
+\(x_1,\ldots,x_n\in V\) be pairwise distinct, and choose
+\(s_1,\ldots,s_n\in T_\Sigma V\). Define
+\(\sigma=[x_1:=s_1,\ldots,x_n:=s_n]\) by
+
+\[
+\sigma(z)=
+\begin{cases}
+s_i,&z=x_i\text{ for the unique }i\in\{1,\ldots,n\},\\
+\eta_V(z),&z\notin\{x_1,\ldots,x_n\}.
+\end{cases}
+\]
+
+Pairwise distinctness makes the first clause single-valued. The two cases
+exhaust \(V\), and every displayed value belongs to \(T_\Sigma V\). Hence the
+display defines the function \(\sigma:V\to T_\Sigma V\). The substitution specified by the empty list is
+\(\eta_V\); a one-element list denotes ordinary single-variable substitution.
+
+The term \(\Sigma\)-algebra \(T_\Sigma X\) carries the formal operations
+\(f_X(t_1,\ldots,t_n)=f(t_1,\ldots,t_n)\). A function between two term
+algebras is a \(\Sigma\)-algebra homomorphism when it preserves all these
+operations.
+
+\paragraph{Unique extension theorem.}
+Every simultaneous substitution \(\sigma:X\to T_\Sigma Y\) has a unique
+\(\Sigma\)-algebra homomorphism
+\(\sigma^*:T_\Sigma X\to T_\Sigma Y\) satisfying
+
+\[
+\begin{aligned}
+\sigma^*(\eta_X(x))&=\sigma(x),\\
+\sigma^*\bigl(f(t_1,\ldots,t_n)\bigr)
+&=f\bigl(\sigma^*(t_1),\ldots,\sigma^*(t_n)\bigr).
+\end{aligned}
+\]
+
+The first clause supplies the value on a variable term. The second supplies the
+value on a composite term from the values already assigned to its immediate
+subterms. Structural recursion proves existence. For uniqueness, let
+\(h:T_\Sigma X\to T_\Sigma Y\) satisfy the same clauses. The variable clause
+yields \(h(\eta_X(x))=\sigma^*(\eta_X(x))\). If equality holds on
+\(t_1,\ldots,t_n\), preservation of \(f\) yields equality on
+\(f(t_1,\ldots,t_n)\). Structural induction now proves \(h=\sigma^*\).
+
+The extension property is typed by the triangle
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+X \arrow[r,"\eta_X"] \arrow[dr,"\sigma"'] &
+T_\Sigma X \arrow[d,dashed,"{\exists!\,\sigma^*}"] \\
+& T_\Sigma Y.
+\end{tikzcd}
+\]
+
+The dashed arrow is required to be a \(\Sigma\)-algebra homomorphism. Its
+preservation of an \(n\)-ary symbol \(f\) is the commutativity of
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+(T_\Sigma X)^n \arrow[r,"f_X"] \arrow[d,"(\sigma^*)^n"'] &
+T_\Sigma X \arrow[d,"\sigma^*"] \\
+(T_\Sigma Y)^n \arrow[r,"f_Y"'] & T_\Sigma Y.
+\end{tikzcd}
+\]
+
+The unique extension is also given by the outer path in the commutative
+triangle
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T_\Sigma X \arrow[r,"T_\Sigma\sigma"] \arrow[dr,"\sigma^*"'] &
+T_\Sigma^2Y \arrow[d,"\mu_Y"] \\
+& T_\Sigma Y.
+\end{tikzcd}
+\]
+
+Indeed, \(\mu_Y\circ T_\Sigma\sigma\) sends a variable term
+\(\eta_X(x)\) to \(\sigma(x)\), preserves every operation symbol, and hence
+equals \(\sigma^*\) by uniqueness. Taking
+\(X=T_\Sigma Y\) and \(\sigma=1_{T_\Sigma Y}\) yields
+\(\mu_Y=(1_{T_\Sigma Y})^*\). Monad multiplication is therefore the unique
+homomorphic extension that substitutes each term for the outer variable
+carrying that term as its label.
+
+\paragraph{Example: a simultaneous substitution.}
+Let \(X=\{x,y\}\), \(Y=\{u,v\}\), and define the function
+\(\sigma:X\to T_\Sigma Y\) by
+\(\sigma(x)=u+1\) and \(\sigma(y)=u\cdot v\). For
+\(t=x\cdot(y+1)\), the recursive clauses yield
+
+\[
+\sigma^*(t)=(u+1)\cdot\bigl((u\cdot v)+1\bigr).
+\]
+
+The factorization through a term of terms is visible before multiplication:
+
+\[
+T_\Sigma\sigma(t)
+=\eta_{T_\Sigma Y}(u+1)\cdot
+ \bigl(\eta_{T_\Sigma Y}(u\cdot v)+1\bigr)
+\in T_\Sigma(T_\Sigma Y).
+\]
+
+Applying \(\mu_Y\) replaces the two displayed outer variables by their term
+labels. The word ``simultaneous'' means that the terms \(\sigma(x)\) and
+\(\sigma(y)\) are inserted in one operation. For example,
+\([x:=y,y:=S(y)]^*(x+y)=y+S(y)\), whereas first replacing \(x\) by \(y\)
+and then replacing \(y\) by \(S(y)\) yields \(S(y)+S(y)\).
+
+If \(\sigma:X\to T_\Sigma Y\) and \(\tau:Y\to T_\Sigma Z\), then their
+Kleisli composite is the outer path in
+
+\[
+\begin{tikzcd}[column sep=large]
+X \arrow[r,"\sigma"]
+  \arrow[rrr,bend right=18,"\tau\star\sigma"'] &
+T_\Sigma Y \arrow[r,"T_\Sigma\tau"] &
+T_\Sigma^2Z \arrow[r,"\mu_Z"] &
+T_\Sigma Z.
+\end{tikzcd}
+\]
+
+Let \(\upsilon:Z\to T_\Sigma W\). The associativity of iterated syntactic
+substitution is literal associativity in the Kleisli category: the following
+square commutes in \(\mathbf{Kl}(T_\Sigma)\), where each displayed arrow is a
+Kleisli arrow:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+X \arrow[r,"\tau\star\sigma"] \arrow[d,"\sigma"'] &
+Z \arrow[d,"\upsilon"] \\
+Y \arrow[r,"\upsilon\star\tau"'] & W.
+\end{tikzcd}
+\]
+
+The upper-right path is \(\upsilon\star(\tau\star\sigma)\), and the
+lower-left path is \((\upsilon\star\tau)\star\sigma\).
+
+Ordinary replacement of a single variable is a special case. Given
+\(s\in T_\Sigma X\) and \(x\in X\), define
+\([x:=s]:X\to T_\Sigma X\) by
+
+\[
+[x:=s](y)=
+\begin{cases}
+s,&y=x,\\
+\eta_X(y),&y\ne x.
+\end{cases}
+\]
+
+Then \(t[x:=s]\) is the value of the Kleisli extension \([x:=s]^*\) at
+\(t\).
+
+\section{Structures as algebras for the term
+monad}\label{structures-as-algebras-for-the-term-monad}
+
+A \(\Sigma\)-algebra on a set \(A\) assigns an operation
+\(f^{\mathcal A}:A^n\to A\) to every \(n\)-ary function symbol
+\(f\in\Sigma\). Equivalently, it is an Eilenberg--Moore algebra for the
+term monad: a map \(a:T_\Sigma A\to A\) satisfying the unit triangle and
+multiplication square displayed in Section~\ref{categorical-vocabulary}, with
+\(T=T_\Sigma\).
+
+The map \(a\) evaluates a term whose variables have already been
+replaced by elements of \(A\). The unit law says that an element used as
+a variable evaluates to itself. The multiplication law says that
+evaluating a term of terms in one step agrees with first evaluating the
+inner terms and then the outer term.
+
+For a language containing relation symbols, this algebra is only the
+functional reduct of an \(\mathcal L\)-structure, obtained by forgetting
+the interpretations of the relation symbols.
+
+\Needspace{9\baselineskip}
+An
+\(\mathcal L\)-structure \(\mathcal A\) consists of:
+
+\begin{itemize}
+\tightlist
+\item
+  a nonempty set \(A\);
+\item
+  a \(T_\Sigma\)-algebra \(a:T_\Sigma A\to A\); and
+\item
+  a subset \(R^{\mathcal A}\subseteq A^n\) for every \(n\)-ary relation
+  symbol \(R\in\mathcal R\).
+\end{itemize}
+
+Logical equality is interpreted by the diagonal
+\(\Delta_A\subseteq A\times A\).
+
+\section{Assignments and
+evaluation}\label{assignments-and-evaluation}
+
+Let \(X\) be a set of variables. An assignment in \(\mathcal A\) is a map
+\(\alpha:X\to A\).
+
+Term evaluation under \(\alpha\) is the outer path in the diagram
+
+\[
+\begin{tikzcd}[column sep=huge]
+T_\Sigma X \arrow[r,"T_\Sigma\alpha"]
+  \arrow[rr,bend right=18,"\llbracket-\rrbracket^{\mathcal A}_\alpha"'] &
+T_\Sigma A \arrow[r,"a"] & A.
+\end{tikzcd}
+\]
+
+The evaluation map \(\llbracket-\rrbracket^{\mathcal A}_\alpha\) is a
+homomorphism from the term Eilenberg--Moore algebra
+\((T_\Sigma X,\mu_X)\) to \((A,a)\); that assertion has the typed form
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T_\Sigma^2X
+  \arrow[r,"T_\Sigma(\llbracket-\rrbracket^{\mathcal A}_\alpha)"]
+  \arrow[d,"\mu_X"'] &
+T_\Sigma A \arrow[d,"a"] \\
+T_\Sigma X
+  \arrow[r,"\llbracket-\rrbracket^{\mathcal A}_\alpha"'] & A.
+\end{tikzcd}
+\]
+
+The evaluator extends the assignment: the triangle
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+X \arrow[r,"\eta_X"] \arrow[dr,"\alpha"'] &
+T_\Sigma X \arrow[d,"\llbracket-\rrbracket^{\mathcal A}_\alpha"] \\
+& A
+\end{tikzcd}
+\]
+
+commutes. Thus \(\llbracket x\rrbracket^{\mathcal A}_\alpha=\alpha(x)\), and
+
+\[
+\llbracket f(t_1,\ldots,t_n)\rrbracket^{\mathcal A}_\alpha
+=
+f^{\mathcal A}
+\bigl(
+\llbracket t_1\rrbracket^{\mathcal A}_\alpha,
+\ldots,
+\llbracket t_n\rrbracket^{\mathcal A}_\alpha
+\bigr).
+\]
+
+The same structural-recursion and structural-induction argument used for
+\(\sigma^*\) shows that this evaluator is the unique
+\(\Sigma\)-algebra homomorphism extending \(\alpha\).
+Because this extension property holds for every \(\Sigma\)-algebra
+\((A,a)\) and every assignment \(\alpha:X\to A\),
+\((T_\Sigma X,\mu_X)\) is called the \textbf{free} \(\Sigma\)-algebra on
+\(X\).
+
+For calculations, write the assignment as \(\atsign:X\to A\) and put
+\(\atsign\,t:=\llbracket t\rrbracket^{\mathcal A}_{\atsign}\). Thus
+\(\atsign\,x=\atsign(x)\) and
+\(\atsign\,f(t_1,\ldots,t_n)=
+f^{\mathcal A}(\atsign\,t_1,\ldots,\atsign\,t_n)\). When the structure must
+be shown, write \(\atsign_{\mathcal A}\,t\).
+
+Now let \(\sigma:X\to T_\Sigma Y\) be a syntactic substitution and let
+\(\beta:Y\to A\) be an assignment. Substitution followed by evaluation
+induces the assignment \(\beta\bullet\sigma:X\to A\), shown as the outer
+path in
+
+\[
+\begin{tikzcd}[column sep=large]
+X \arrow[r,"\sigma"]
+  \arrow[rrr,bend right=18,"\beta\mathbin\bullet\sigma"'] &
+T_\Sigma Y \arrow[r,"T_\Sigma\beta"] &
+T_\Sigma A \arrow[r,"a"] & A.
+\end{tikzcd}
+\]
+
+For each \(x\in X\), the value \((\beta\bullet\sigma)(x)\) is the value
+under \(\beta\) of the term \(\sigma(x)\).
+
+\paragraph{Example: evaluating a simultaneous substitution.}
+Continue the earlier example with \(X=\{x,y\}\), \(Y=\{u,v\}\),
+\(\sigma(x)=u+1\), \(\sigma(y)=u\cdot v\), and
+\(t=x\cdot(y+1)\). In the arithmetic structure on \(\mathbb N\), let
+\(\atsign:Y\to\mathbb N\) satisfy \(\atsign(u)=2\) and \(\atsign(v)=3\).
+Then \((\atsign\bullet\sigma)(x)=3\) and
+\((\atsign\bullet\sigma)(y)=6\), and
+
+\[
+\atsign\bigl(\sigma^*(t)\bigr)
+=3\cdot(6+1)=21
+= (\atsign\bullet\sigma)t.
+\]
+
+The term-substitution lemma says
+that the square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+T_\Sigma X
+  \arrow[r,"\sigma^*"]
+  \arrow[d,"\llbracket-\rrbracket^{\mathcal A}_{\beta\bullet\sigma}"'] &
+T_\Sigma Y
+  \arrow[d,"\llbracket-\rrbracket^{\mathcal A}_{\beta}"] \\
+A \arrow[r,"1_A"'] & A
+\end{tikzcd}
+\]
+
+commutes. Equivalently,
+\(\llbracket\sigma^*(t)\rrbracket^{\mathcal A}_\beta=
+\llbracket t\rrbracket^{\mathcal A}_{\beta\bullet\sigma}\).
+\Needspace{11\baselineskip}
+It follows from naturality of \(\mu\) and the algebra identity represented by
+the two adjacent commutative squares:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T_\Sigma X \arrow[r,"T_\Sigma\sigma"] &
+T_\Sigma^2Y
+  \arrow[r,"T_\Sigma^2\beta"]
+  \arrow[d,"\mu_Y"'] &
+T_\Sigma^2A
+  \arrow[r,"T_\Sigma a"]
+  \arrow[d,"\mu_A"'] &
+T_\Sigma A \arrow[d,"a"] \\
+& T_\Sigma Y
+  \arrow[r,"T_\Sigma\beta"'] &
+T_\Sigma A \arrow[r,"a"'] & A.
+\end{tikzcd}
+\]
+
+For the single-variable substitution \([x:=s]\), the induced assignment is
+\(\alpha\bullet[x:=s]=
+\alpha[x\mapsto\llbracket s\rrbracket^{\mathcal A}_\alpha]\).
+
+Consequently,
+
+\[
+\boxed{
+\llbracket t[x:=s]\rrbracket^{\mathcal A}_\alpha
+=
+\llbracket t\rrbracket^{\mathcal A}_{
+\alpha[x\mapsto\llbracket s\rrbracket^{\mathcal A}_\alpha]}
+}
+\]
+
+For \(c\in A\), let \(\atsign\vert_c^x\) be the assignment obtained from
+\(\atsign\) by sending \(x\) to \(c\) and leaving every other value fixed.
+For a term \(s\), write \(\vert_s^x t\) for \(t[x:=s]\). The same substitution law is then the
+type-revealing calculational identity
+
+\[
+\boxed{
+\bigl(\atsign\vert_{\atsign\,s}^x\bigr)t
+=\atsign(\vert_s^x t).
+}
+\]
+
+The commutative square records the types and compositional structure of the
+law; the \(\atsign\)-identity performs the corresponding calculation.
+Syntactic substitution is Kleisli composition, and its compatibility with
+evaluation is an Eilenberg--Moore algebra law. A concrete arithmetic comparison
+of the textbook, categorical, and \(\atsign\)-forms appears below.
+
+\section{Formulas and satisfaction}\label{formulas-and-satisfaction}
+
+Let \(\operatorname{Form}_{\mathcal L}(X)\) be the set of
+\(\alpha\)-equivalence classes of \(\mathcal L\)-formulas whose free
+variables belong to \(X\). Two formulas are \(\alpha\)-equivalent when they
+differ only by capture-avoiding renaming of bound variables. A Kleisli substitution
+\(\sigma:X\to T_\Sigma Y\) induces capture-avoiding substitution
+\((-)[\sigma]:\operatorname{Form}_{\mathcal L}(X)
+\to\operatorname{Form}_{\mathcal L}(Y)\), which is well-defined on these
+classes.
+
+Put \(Q(X)=\operatorname{Form}_{\mathcal L}(X)\) and
+\(Q(\sigma)=(-)[\sigma]\). On atomic formulas, \(Q(\sigma)\) substitutes
+into their constituent terms. It commutes with the propositional connectives.
+At a quantifier, bound variables are renamed when required to prevent capture.
+The identity law is the commutativity of
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+& Q(X) \arrow[dl,"Q(\eta_X)"'] \arrow[dr,"1_{Q(X)}"] & \\
+Q(X) \arrow[rr,"1_{Q(X)}"'] && Q(X),
+\end{tikzcd}
+\]
+
+and, for \(\sigma:X\to T_\Sigma Y\) and
+\(\tau:Y\to T_\Sigma Z\), the composition law is the commutativity of
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+Q(X) \arrow[r,"Q(\sigma)"] \arrow[dr,"Q(\tau\star\sigma)"'] &
+Q(Y) \arrow[d,"Q(\tau)"] \\
+& Q(Z).
+\end{tikzcd}
+\]
+
+Thus formulas carry an action of the Kleisli substitutions of the term
+monad: \(Q:\mathbf{Kl}(T_\Sigma)\to\mathbf{Set}\) is a functor. Bound
+variables add the capture-avoidance requirement to this action on formulas;
+its composition laws remain those displayed above.
+
+Satisfaction is defined in the usual way. Its atomic clauses are
+
+\[
+\begin{aligned}
+\mathcal A,\alpha\models t=u
+&\quad\Longleftrightarrow\quad
+\llbracket t\rrbracket^{\mathcal A}_\alpha
+=\llbracket u\rrbracket^{\mathcal A}_\alpha,\\
+\mathcal A,\alpha\models R(t_1,\ldots,t_n)
+&\quad\Longleftrightarrow\quad
+\bigl(\llbracket t_1\rrbracket^{\mathcal A}_\alpha,\ldots,
+\llbracket t_n\rrbracket^{\mathcal A}_\alpha\bigr)
+\in R^{\mathcal A}.
+\end{aligned}
+\]
+
+For calculations, define the postfix notation
+\(\varphi\,\atsign:\!\Longleftrightarrow
+\mathcal A,\atsign\models\varphi\). The atomic clauses become
+
+\[
+(t=u)\,\atsign\ \Longleftrightarrow\ \atsign\,t=\atsign\,u,
+\qquad
+R(t_1,\ldots,t_n)\,\atsign\ \Longleftrightarrow\ 
+(\atsign\,t_1,\ldots,\atsign\,t_n)\in R^{\mathcal A}.
+\]
+
+When the structure must be shown, write
+\(\varphi\,\atsign_{\mathcal A}\).
+
+The clauses for the propositional connectives use the corresponding
+operations in the metalanguage. Let \(\alpha:X\to A\). For \(b\in A\), write
+\(\alpha[x\mapsto b]:X\cup\{x\}\to A\) for the assignment that sends
+\(x\) to \(b\) and agrees with \(\alpha\) elsewhere; when \(x\in X\), this
+overwrites its old value. If the free variables of \(\varphi\) lie in
+\(X\cup\{x\}\), the quantifier clauses are
+
+\[
+\begin{aligned}
+\mathcal A,\alpha\models(\forall x)\varphi
+&\quad\Longleftrightarrow\quad
+\text{for every }b\in A,
+\ \mathcal A,\alpha[x\mapsto b]\models\varphi,\\
+\mathcal A,\alpha\models(\exists x)\varphi
+&\quad\Longleftrightarrow\quad
+\text{for some }b\in A,
+\ \mathcal A,\alpha[x\mapsto b]\models\varphi.
+\end{aligned}
+\]
+
+Using \(\atsign\vert_b^x:X\cup\{x\}\to A\) for the assignment that sends
+\(x\) to \(b\) and otherwise agrees with \(\atsign\), the same clauses are
+
+\[
+\begin{aligned}
+((\forall x)\varphi)\,\atsign
+&\quad\Longleftrightarrow\quad
+\text{for every }b\in A,\ \varphi\,(\atsign\vert_b^x),\\
+((\exists x)\varphi)\,\atsign
+&\quad\Longleftrightarrow\quad
+\text{for some }b\in A,\ \varphi\,(\atsign\vert_b^x).
+\end{aligned}
+\]
+
+Regard satisfaction as its characteristic map
+\(S_X^{\mathcal A}:\operatorname{Form}_{\mathcal L}(X)\times A^X
+\to\mathbf 2\), with value \(\top\) exactly on satisfied pairs. For an
+assignment \(\alpha:X\to A\), write
+\(S_\alpha^{\mathcal A}:=S_X^{\mathcal A}(-,\alpha)\). For
+\(\sigma:X\to T_\Sigma Y\) and \(\beta:Y\to A\), the formula-substitution
+lemma is the commutativity of
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+\operatorname{Form}_{\mathcal L}(X)
+  \arrow[r,"{(-)[\sigma]}"]
+  \arrow[d,swap,"S_{\beta\bullet\sigma}^{\mathcal A}"] &
+\operatorname{Form}_{\mathcal L}(Y)
+  \arrow[d,"S_\beta^{\mathcal A}"] \\
+\mathbf 2 \arrow[r,"1_{\mathbf 2}"'] & \mathbf 2.
+\end{tikzcd}
+\]
+
+Elementwise, the square says
+
+\[
+\boxed{
+\mathcal A,\beta\models\varphi[\sigma]
+\quad\Longleftrightarrow\quad
+\mathcal A,\beta\bullet\sigma\models\varphi
+}
+\]
+
+provided substitution is capture-avoiding. Its atomic cases are
+consequences of the algebra law for term evaluation; its quantifier
+cases follow by induction after the required renaming of bound
+variables.
+
+For a single-variable substitution, write \(\varphi\vert_s^x\) for the
+capture-avoiding formula \(\varphi[x:=s]\). With the assignment-update notation
+introduced above, the same lemma is the calculational identity
+
+\[
+\boxed{
+\bigl(\varphi\vert_s^x\bigr)\,\atsign
+\ \Longleftrightarrow\ 
+\varphi\,\bigl(\atsign\vert_{\atsign\,s}^x\bigr).
+}
+\]
+
+\paragraph{Example: avoiding capture.}
+In arithmetic with \(<\), let \(\varphi\) be \((\exists y)\,x<y\), with
+\(\operatorname{FV}(\varphi)=\{x\}\), and substitute the variable \(y\) for \(x\).
+Capture-avoiding substitution yields
+\(\varphi[x:=y]=(\exists z)\,y<z\), with \(z\) fresh. Literal textual
+replacement would yield \((\exists y)\,y<y\), changing the meaning. If
+\(\atsign(y)=3\) in \(\mathbb N\), then
+\((\varphi\vert_y^x)\,\atsign\Longleftrightarrow
+\varphi\,(\atsign\vert_{\atsign\,y}^x)\), and both sides are true; the formula produced
+by literal replacement is false.
+
+Satisfaction also has the locality property. If assignments
+\(\alpha,\alpha':X\to A\) agree on every free variable of \(\varphi\),
+then \(\mathcal A,\alpha\models\varphi\) if and only if
+\(\mathcal A,\alpha'\models\varphi\).
+
+In textbook usage, the notation \(\varphi(x_1,\ldots,x_n)\), when introduced
+by saying that the free variables of \(\varphi\) are \emph{among}
+\(x_1,\ldots,x_n\), means
+\(\operatorname{FV}(\varphi)\subseteq\{x_1,\ldots,x_n\}\).
+
+Some, all, or none of the displayed variables may actually occur freely.
+
+\section{The at-sign notation as a pairing calculus}
+\label{at-sign-pairing-calculus}
+
+The assignment, term-evaluation, and satisfaction maps defined above have two
+parallel presentations. Category-theoretic notation records their types and
+composition; the $\atsign$-notation is used for their calculations. Prefix or
+postfix position identifies the typed pairing in use.
+
+\Needspace{9\baselineskip}
+In this note, a \textbf{pairing} means simply a map $P\times Q\to K$ with two
+ordered inputs. The two pairings are
+
+\[
+E_X^{\mathcal A}:A^X\times T_\Sigma X\longrightarrow A,
+\qquad
+S_X^{\mathcal A}:
+\operatorname{Form}_{\mathcal L}(X)\times A^X
+\longrightarrow\mathbf 2.
+\]
+
+Here $A^X$ is the set of assignments $X\to A$,
+$E_X^{\mathcal A}(\alpha,t)=\llbracket t\rrbracket^{\mathcal A}_\alpha$,
+and, for $\mathbf 2=\{\bot,\top\}$,
+$S_X^{\mathcal A}(\varphi,\alpha)=\top$ exactly when
+$\mathcal A,\alpha\models\varphi$. Thus $S_X^{\mathcal A}$ is the
+characteristic function of the ordinary satisfaction relation.
+
+The prefix and postfix notation already used above abbreviates these pairings:
+$\atsign\,t=E_X^{\mathcal A}(\atsign,t)$, while
+$\varphi\,\atsign$ holds exactly when
+$S_X^{\mathcal A}(\varphi,\atsign)=\top$.
+
+The placement of $\atsign$ records the assignment's argument position and
+therefore identifies the pairing being used. Prefix $\atsign$ invokes
+$E_X^{\mathcal A}$ and returns an element of $A$; postfix $\atsign$ invokes
+$S_X^{\mathcal A}$ by abbreviating the assertion
+$S_X^{\mathcal A}(\varphi,\atsign)=\top$.
+
+\paragraph{Example: the two result types.}
+In the arithmetic structure on \(\mathbb N\), let \(\atsign(x)=2\) and
+\(\atsign(y)=3\). Then \(\atsign\bigl(x\cdot(y+1)\bigr)=8\in\mathbb N\),
+whereas \(\bigl(x\cdot(y+1)=8\bigr)\,\atsign\) is a true proposition.
+
+The update and substitution symbols introduced above make substitution appear
+to pass through an evaluation pairing, from the syntactic argument to the
+assignment. For an arbitrary Kleisli substitution
+$\sigma:X\to T_\Sigma Y$, write
+$P_a(\sigma):A^Y\to A^X$ for the assignment map
+$\beta\mapsto\beta\bullet\sigma$. The compatibility of term evaluation with
+substitution is the commutativity of the typed square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+A^Y\times T_\Sigma X
+  \arrow[r,"1_{A^Y}\times\sigma^*"]
+  \arrow[d,"P_a(\sigma)\times1_{T_\Sigma X}"'] &
+A^Y\times T_\Sigma Y \arrow[d,"E_Y^{\mathcal A}"] \\
+A^X\times T_\Sigma X \arrow[r,"E_X^{\mathcal A}"'] & A.
+\end{tikzcd}
+\]
+
+The compatibility of satisfaction with substitution is the commutativity of
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+\operatorname{Form}_{\mathcal L}(X)\times A^Y
+  \arrow[r,"{(-)[\sigma]\times1_{A^Y}}"]
+  \arrow[d,"1_{Q(X)}\times P_a(\sigma)"'] &
+\operatorname{Form}_{\mathcal L}(Y)\times A^Y
+  \arrow[d,"S_Y^{\mathcal A}"] \\
+\operatorname{Form}_{\mathcal L}(X)\times A^X
+  \arrow[r,"S_X^{\mathcal A}"'] & \mathbf 2.
+\end{tikzcd}
+\]
+
+In the $\atsign$-calculus, for \(\atsign:Y\to A\), the same two laws are
+
+\[
+(\atsign\bullet\sigma)t
+=\atsign\bigl(\sigma^*(t)\bigr),
+\qquad
+\bigl(\varphi[\sigma]\bigr)\,\atsign
+\ \Longleftrightarrow\ 
+\varphi\,(\atsign\bullet\sigma).
+\]
+
+The lower-right object in the satisfaction square is \(\mathbf 2\), so its
+$\atsign$-form is a biconditional. The diagrams and the $\atsign$-display
+express the same compatibility of substitution with the evaluation pairings:
+the diagrams expose every type, while the $\atsign$-forms perform the
+corresponding calculations.
+
+\subsection{One calculation in three notations}
+
+Work in \(\mathbb N\) with \(X=\{x,y\}\), \(t=x\cdot(y+1)\),
+\(s=y+1\), \(\alpha(x)=2\), and \(\alpha(y)=3\). Put
+\(\sigma=[x:=s]\). Since \(\alpha\bullet\sigma=\alpha[x\mapsto4]\), the
+same calculation has three forms:
+
+\begin{itemize}
+\tightlist
+\item
+  In traditional logical notation,
+  \(\llbracket t[x:=s]\rrbracket^{\mathbb N}_\alpha=
+  \llbracket t\rrbracket^{\mathbb N}_{\alpha[x\mapsto4]}=16\).
+\item
+  In the $\atsign$-calculus, the same equality is
+  \(\bigl(\atsign\vert_{\atsign\,s}^x\bigr)t
+  =\atsign(\vert_s^x t)=16\), where \(\atsign=\alpha\).
+\item
+  Categorically, the substitution square says
+  \(E_X^{\mathbb N}(\alpha,\sigma^*(t))=
+  E_X^{\mathbb N}(\alpha\bullet\sigma,t)\): \(\sigma^*\) changes the syntax,
+  while \(\alpha\bullet\sigma\) changes the assignment.
+\end{itemize}
+
+Now take \(\varphi=(\exists z)\,x<z\), with
+\(\operatorname{FV}(\varphi)=\{x\}\). In traditional notation,
+\(\mathbb N,\alpha\models\varphi[x:=s]\) if and only if
+\(\mathbb N,\alpha\bullet\sigma\models\varphi\), where
+\(\alpha\bullet\sigma=\alpha[x\mapsto4]\). The categorical line is
+\(S_X^{\mathbb N}(\varphi[\sigma],\alpha)=
+S_X^{\mathbb N}(\varphi,\alpha\bullet\sigma)=\top\), and the pairing line is
+\(\bigl(\varphi\vert_s^x\bigr)\,\atsign\Longleftrightarrow
+\varphi\,\bigl(\atsign\vert_{\atsign\,s}^x\bigr)\). The categorical line identifies the common
+substitution mechanism, while the $\atsign$-line performs the corresponding
+calculation. Both remain alongside the textbook notation.
+
+\section{Occurrence-indexed substitution}
+\label{occurrence-indexed-substitution}
+
+Term and formula substitution construct a new syntactic expression. A second
+operation records where each occurrence of a formal argument goes during that
+construction. \DP\ use finite ordinals for this bookkeeping
+\cite[\S2.5, pp.~45--46]{DPcoherence}. Their operation is especially informative
+when an outer pattern repeats an argument or when an inserted pattern repeats
+one of its own arguments. Appendix~\ref{app:occurrence-feferman}
+applies the same finite occurrence construction to arithmetic term holes
+and proves its compatibility with Feferman's substitution on codes.
+
+The letters \(\mu\) and \(\nu_i\) denote occurrence maps in the original
+\DP\ notation. This note uses \(\mu_X\) for monad multiplication and reserves
+\(\nu_A\) for the naming map introduced later. Accordingly, write \(o_M\) and
+\(o_i\) for the occurrence maps in this section.
+
+\subsection{Finite occurrence blocks}
+
+For \(n\in\mathbb N\), let
+\(\finord n=\{1,\ldots,n\}\), with
+\(\finord0=\varnothing\). Given a finite list
+\(\vec a=(a_1,\ldots,a_m)\), define its tagged block sum by
+
+\[
+\bigoplus_{r=1}^{m}\finord{a_r}
+=\{(r,t):r\in\finord m,\ t\in\finord{a_r}\}.
+\]
+
+This tagged disjoint union is the coproduct in \(\mathbf{Set}\) of the finite
+blocks \(\finord{a_r}\).
+The tag \(r\) records the block and \(t\) records the position inside that
+block. Put \(|\vec a|=\sum_{r=1}^{m}a_r\). The block encoding
+
+\[
+\theta_{\vec a}:
+\bigoplus_{r=1}^{m}\finord{a_r}
+\longrightarrow \finord{|\vec a|},
+\qquad
+\theta_{\vec a}(r,t)=\sum_{q<r}a_q+t
+\]
+
+is a bijection. For \(x\in\finord{|\vec a|}\), there is a unique block
+\(r\) satisfying
+\(\sum_{q<r}a_q<x\leq\sum_{q\leq r}a_q\); its inverse is
+
+\[
+\theta_{\vec a}^{-1}(x)
+=\left(r,x-\sum_{q<r}a_q\right).
+\]
+
+For example, when \(\vec a=(2,1,3)\), the successive pairs
+\((1,1),(1,2),(2,1),(3,1),(3,2),(3,3)\) are encoded by
+\(1,2,3,4,5,6\). Finite-ordinal treatments call \(\theta_{\vec a}\)
+\emph{flattening}. Its source is a tagged sum of finite sets. The term-monad
+map \(\mu_X\) has source \(T_\Sigma(T_\Sigma X)\) and removes a syntactic term
+layer. The two types keep the operations distinct.
+
+The common zero-based convention
+\([0]=\varnothing\) and \([n]=\{0,\ldots,n-1\}\) for \(n\geq 1\)
+yields the same construction. The order isomorphism
+\(\rho_n:\finord n\to[n]\), \(\rho_n(t)=t-1\), simply subtracts one from
+each coordinate. In particular,
+\(\rho_{|\vec a|}(\theta_{\vec a}(r,t))
+=\sum_{q<r}a_q+(t-1)\), which is the zero-based block coordinate of the
+local position \(t-1\in[a_r]\). Mac Lane uses this zero-based convention,
+writing \(n\) for the finite ordinal denoted here by \([n]\)
+\cite[\S VII.5]{MacLane}.
+
+\subsection{Occurrence profiles and fibrewise substitution}
+
+A \textbf{formula pattern} on a set \(P\) of placeholders is
+an expression built from the members of \(P\), the truth constants
+\(\top,\bot\), and propositional connectives. The truth constants are taken as
+primitive nullary logical connectives or as fixed closed formula
+abbreviations; in either case they determine elements of
+\(\operatorname{Form}_{\mathcal L}(X)\) for every variable set \(X\). Write
+\(\operatorname{Pat}(P)\) for the set of such patterns. Replacing its
+placeholders by patterns or formulas while preserving the truth constants and
+connectives produces another pattern or a formula. If
+\(P=\{p_1,\ldots,p_k\}\), the pattern's \textbf{formal arity} is \(k\). Its
+\textbf{occurrence slots} are the individual appearances of those
+placeholders, counted with repetitions and read from left to right.
+
+Let \(M\in\operatorname{Pat}(P)\) occupy \(m\) occurrence slots. Its
+occurrence profile is the function
+
+\[
+o_M:\finord m\longrightarrow\finord k,
+\qquad
+o_M(r)=i
+\quad\Longleftrightarrow\quad
+\text{the \(r\)-th occurrence is occupied by \(p_i\)}.
+\]
+
+For comparison with the original \DP\ notation, let
+\(\operatorname{sk}_P:\operatorname{Pat}(P)\to
+\operatorname{Pat}(\{\square\})\) be the erasure map defined recursively by
+replacing every formal placeholder in \(P\) by the single placeholder
+\(\square\), while fixing truth constants and preserving connectives. When
+the placeholder set is clear, write \(\operatorname{sk}\). The decorated
+skeleton \(\operatorname{sk}_P(M)^{o_M}\) consists of the one-placeholder
+skeleton together with the external argument-indexing map \(o_M\). Thus
+\(M\) and \(\operatorname{sk}_P(M)^{o_M}\) encode the same pattern data in
+two forms.
+
+For each \(i\in\finord k\), let
+\(Q_i=\{q_{i,1},\ldots,q_{i,\ell_i}\}\), with all these placeholders pairwise
+distinct, and let \(N_i\in\operatorname{Pat}(Q_i)\) have \(n_i\) occurrence
+slots. Its occurrence profile is a function
+\(o_i:\finord{n_i}\to\finord{\ell_i}\). Put
+\(Q_{\mathrm{occ}}=\coprod_{i=1}^k Q_i\), identified with the tagged set of placeholders
+\(\{(i,q_{i,s}):i\in\finord k,\ s\in\finord{\ell_i}\}\).
+
+Define \(\Phi_0:P\to\operatorname{Pat}(Q_{\mathrm{occ}})\) by
+\(\Phi_0(p_i)=N_i\), viewing \(N_i\) in
+\(\operatorname{Pat}(Q_{\mathrm{occ}})\) through the
+inclusion \(Q_i\to Q_{\mathrm{occ}}\). Structural recursion yields a unique map
+\((-)[\Phi_0]:\operatorname{Pat}(P)\to
+\operatorname{Pat}(Q_{\mathrm{occ}})\) that sends each
+\(p_i\) to \(N_i\), fixes \(\top\) and \(\bot\), and preserves every
+propositional connective. Write \(M[\Phi_0]\) for the resulting substituted
+pattern. While forming \(M[\Phi_0]\), the \(r\)-th occurrence of \(M\) is
+replaced by a copy of \(N_{o_M(r)}\).
+
+Write \(\vec n=(n_1,\ldots,n_k)\),
+\(\vec\ell=(\ell_1,\ldots,\ell_k)\), and
+\(\vec o=(o_1,\ldots,o_k)\).
+
+The occurrences in the substituted pattern form the tagged source
+
+\[
+D_{M,\vec n}
+=\bigoplus_{r=1}^{m}\finord{n_{o_M(r)}}
+=\{(r,t):r\in\finord m,\ t\in\finord{n_{o_M(r)}}\}.
+\]
+
+The pair \((r,t)\) means: first choose the \(r\)-th occurrence of \(M\), then
+choose the \(t\)-th occurrence inside the inserted copy of
+\(N_{o_M(r)}\). The formal arguments of all the inserted patterns form the
+tagged target
+
+\[
+C_{\vec\ell}
+=\bigoplus_{i=1}^{k}\finord{\ell_i}
+=\{(i,s):i\in\finord k,\ s\in\finord{\ell_i}\}.
+\]
+
+The fibrewise occurrence-substitution function is
+
+\[
+\gamma_{M,\vec o}:D_{M,\vec n}\longrightarrow C_{\vec\ell},
+\qquad
+\gamma_{M,\vec o}(r,t)
+=\bigl(o_M(r),o_{o_M(r)}(t)\bigr).
+\]
+
+This formula is well-defined. Membership
+\(t\in\finord{n_{o_M(r)}}\) and the declared type of
+\(o_{o_M(r)}\) imply
+\(o_{o_M(r)}(t)\in\finord{\ell_{o_M(r)}}\); hence the resulting pair lies in
+the \(o_M(r)\)-th target fibre.
+
+Let
+\(\iota_r:\finord{n_{o_M(r)}}\to D_{M,\vec n}\) and
+\(j_i:\finord{\ell_i}\to C_{\vec\ell}\) be the functions
+\(\iota_r(t)=(r,t)\) and \(j_i(s)=(i,s)\). They are the coproduct
+injections of the tagged block sums. For each \(r\in\finord m\), the square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+\finord{n_{o_M(r)}} \arrow[r,"\iota_r"]
+  \arrow[d,"o_{o_M(r)}"'] &
+D_{M,\vec n} \arrow[d,"\gamma_{M,\vec o}"] \\
+\finord{\ell_{o_M(r)}} \arrow[r,"j_{o_M(r)}"'] & C_{\vec\ell}
+\end{tikzcd}
+\]
+
+commutes. Taken together for every \(r\), these squares determine
+\(\gamma_{M,\vec o}\) uniquely, because every element of
+\(D_{M,\vec n}\) lies in exactly one injected fibre.
+This is the coproduct unique-extension property for the family of maps
+\(j_{o_M(r)}\circ o_{o_M(r)}\).
+
+Projection to the block tags yields another typed description. Define
+\(p_D(r,t)=r\) and \(p_C(i,s)=i\). The following square commutes:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+D_{M,\vec n} \arrow[r,"\gamma_{M,\vec o}"] \arrow[d,"p_D"'] &
+C_{\vec\ell} \arrow[d,"p_C"] \\
+\finord m \arrow[r,"o_M"'] & \finord k
+\end{tikzcd}
+\]
+
+On the fibre above \(r\), the map is exactly
+\(o_{o_M(r)}\), with its value placed in the fibre above \(o_M(r)\).
+
+\subsection{The ordinal-coded operation}
+
+Define cumulative source and target sizes by
+
+\[
+\pi(0)=0,\qquad
+\pi(r)=\sum_{q=1}^{r}n_{o_M(q)},
+\qquad
+\lambda(0)=0,\qquad
+\lambda(i)=\sum_{q=1}^{i}\ell_q.
+\]
+
+Thus \(D_{M,\vec n}\) has \(\pi(m)\) elements and
+\(C_{\vec\ell}\) has \(\lambda(k)\) elements. Their block encodings are
+
+\[
+\begin{aligned}
+\theta_D:D_{M,\vec n}&\longrightarrow\finord{\pi(m)},
+&\theta_D(r,t)&=\pi(r-1)+t,\\
+\theta_C:C_{\vec\ell}&\longrightarrow\finord{\lambda(k)},
+&\theta_C(i,s)&=\lambda(i-1)+s.
+\end{aligned}
+\]
+
+The \DP\ ordinal-coded substitution is the transported function
+
+\[
+\delta_{M,\vec o}
+=\theta_C\circ\gamma_{M,\vec o}\circ\theta_D^{-1}:
+\finord{\pi(m)}\longrightarrow\finord{\lambda(k)}.
+\]
+
+Its relation to the fibrewise map is the commutative square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+D_{M,\vec n} \arrow[r,"\gamma_{M,\vec o}"] \arrow[d,"\theta_D"'] &
+C_{\vec\ell} \arrow[d,"\theta_C"] \\
+\finord{\pi(m)} \arrow[r,"\delta_{M,\vec o}"'] &
+\finord{\lambda(k)}.
+\end{tikzcd}
+\]
+
+The coordinate formula uses the block locator
+\(b:\finord{\pi(m)}\to\finord m\), defined by
+
+\[
+b(x)=\min\{r\in\finord m:x\leq\pi(r)\}.
+\]
+
+For every \(x\in\finord{\pi(m)}\), the displayed set is nonempty because
+\(x\leq\pi(m)\); its least member is therefore defined and unique.
+The local position of \(x\) inside that source block is
+\(x-\pi(b(x)-1)\). Consequently,
+
+\[
+\delta_{M,\vec o}(x)
+=\lambda\bigl(o_M(b(x))-1\bigr)
++o_{o_M(b(x))}\bigl(x-\pi(b(x)-1)\bigr).
+\]
+
+To verify the formula, start with \(x\). The inverse block encoding satisfies
+\(\theta_D^{-1}(x)=(b(x),x-\pi(b(x)-1))\). Applying \(\gamma_{M,\vec o}\)
+selects the profile \(o_{o_M(b(x))}\). Applying \(\theta_C\) adds the target
+offset \(\lambda(o_M(b(x))-1)\). This is exactly the displayed value of
+\(\delta_{M,\vec o}(x)\).
+
+\paragraph{Occurrence-profile theorem.}
+Under the block encodings \(\theta_D\) and \(\theta_C\), the occurrence
+profile of the substituted pattern \(M[\Phi_0]\) is
+\(\delta_{M,\vec o}\). Consequently, the labelled-pattern construction
+transports the \DP\ generalized composite to
+
+\[
+\operatorname{sk}_P(M)^{o_M}
+\bigl(\operatorname{sk}_{Q_1}(N_1)^{o_1},\ldots,
+      \operatorname{sk}_{Q_k}(N_k)^{o_k}\bigr)
+:=\operatorname{sk}_{Q_{\mathrm{occ}}}\bigl(M[\Phi_0]\bigr)^{\delta_{M,\vec o}},
+\]
+
+where a superscript records the external argument-indexing map attached to the
+displayed skeleton. Renaming the skeletons
+\(\operatorname{sk}_P(M),\operatorname{sk}_{Q_1}(N_1),\ldots,
+\operatorname{sk}_{Q_k}(N_k)\) as \(M,N_1,\ldots,N_k\), as in the original
+notation, this is
+\(M^\mu(N_1^{\nu_1},\ldots,N_k^{\nu_k})\), with
+\(\mu=o_M\), \(\nu_i=o_i\), and
+\(\mu(\nu_1,\ldots,\nu_k)=\delta_{M,\vec o}\).
+
+Indeed, every occurrence of \(M[\Phi_0]\) has unique fibre coordinates
+\((r,t)\in D_{M,\vec n}\): \(r\) selects an occurrence of \(M\), and \(t\)
+selects an occurrence in the inserted copy of \(N_{o_M(r)}\). The placeholder
+at that occurrence is the tagged element
+\(\bigl(o_M(r),q_{o_M(r),\,o_{o_M(r)}(t)}\bigr)\in Q_{\mathrm{occ}}\).
+Under the canonical indexing of \(Q_{\mathrm{occ}}\) by \(C_{\vec\ell}\), its
+coordinate is \(\gamma_{M,\vec o}(r,t)\). Transporting source and target
+coordinates through \(\theta_D\) and \(\theta_C\) yields
+\(\theta_C\circ\gamma_{M,\vec o}\circ\theta_D^{-1}
+=\delta_{M,\vec o}\), as required.
+
+For maps \(f_i:\finord{a_i}\to\finord{b_i}\), put
+\(\vec a=(a_1,\ldots,a_k)\) and \(\vec b=(b_1,\ldots,b_k)\). Their
+flattened ordinal sum is
+
+\[
+f_1\oplus\cdots\oplus f_k
+=\theta_{\vec b}\circ
+ \left(\bigoplus_{i=1}^{k}f_i\right)
+ \circ\theta_{\vec a}^{-1},
+\qquad
+\left(\bigoplus_{i=1}^{k}f_i\right)(i,t)=(i,f_i(t)).
+\]
+
+When \(m=k\) and \(o_M=1_{\finord k}\), each outer slot uses the inserted
+pattern with the same index. The fibrewise map is
+\(\bigoplus_{i=1}^{k}o_i\), and its ordinal-coded form is
+\(o_1\oplus\cdots\oplus o_k\).
+
+\subsection{A complete occurrence calculation}
+
+Take the formula patterns
+
+\[
+M(p,q)=q\wedge(p\vee q),\qquad
+N_1(a,b)=a\wedge b,
+\qquad
+N_2(c,d)=d\wedge(c\vee d).
+\]
+
+Reading occurrences from left to right yields
+\(o_M=(2,1,2)\), \(o_1=(1,2)\), and \(o_2=(2,1,2)\).
+
+Here \(m=3\), \(k=2\), \((n_1,n_2)=(2,3)\), and
+\((\ell_1,\ell_2)=(2,2)\). After substitution,
+
+\[
+M(N_1,N_2)
+=\bigl(d\wedge(c\vee d)\bigr)
+ \wedge
+ \bigl((a\wedge b)\vee(d\wedge(c\vee d))\bigr).
+\]
+
+Its source fibres have sizes \(3,2,3\), while its target fibres list the
+formal arguments as \((a,b)\) and \((c,d)\). The successive source
+occurrences and their encoded target positions are
+
+\[
+\begin{array}{c|ccc|cc|ccc}
+\text{source position }x&1&2&3&4&5&6&7&8\\ \hline
+\text{occurring letter}&d&c&d&a&b&d&c&d\\
+\delta_{M,\vec o}(x)&4&3&4&1&2&4&3&4
+\end{array}
+\]
+
+Thus the generalized composite in the labelled-pattern encoding of the
+\DP\ notation is
+\[
+\operatorname{sk}_P(M)^{(2,1,2)}
+\bigl(\operatorname{sk}_{Q_1}(N_1)^{(1,2)},
+      \operatorname{sk}_{Q_2}(N_2)^{(2,1,2)}\bigr)
+=\operatorname{sk}_{Q_{\mathrm{occ}}}
+ \bigl(M(N_1,N_2)\bigr)^{(4,3,4,1,2,4,3,4)}.
+\]
+
+For instance, \(\theta_D^{-1}(2)=(1,2)\): source position \(2\) is the
+second occurrence inside the copy of \(N_2\) inserted at the first outer
+slot. Then
+\(\gamma_{M,\vec o}(1,2)=(2,o_2(2))=(2,1)\), and
+\(\theta_C(2,1)=3\). Hence \(\delta_{M,\vec o}(2)=3\), as the table records.
+
+Three substitution operations now have explicit types.
+The map \(\sigma^*:T_\Sigma X\to T_\Sigma Y\) substitutes terms for term
+variables. The map
+\((-)[\sigma]:\operatorname{Form}_{\mathcal L}(X)\to
+\operatorname{Form}_{\mathcal L}(Y)\) performs capture-avoiding term
+substitution in formulas. The map
+\((-)[\Phi_0]:\operatorname{Pat}(P)\to
+\operatorname{Pat}(Q_{\mathrm{occ}})\) substitutes
+formula patterns for formal formula arguments. The maps
+\(\gamma_{M,\vec o}\) and \(\delta_{M,\vec o}\) record the intermediate
+pattern-level provenance of placeholder occurrences under the third operation.
+
+\subsection{The \texorpdfstring{$\atsign$}{@}-calculus for the associated
+formula substitution}
+
+The \(\atsign\)-calculus evaluates the formulas produced by the pattern
+substitution whose occurrence provenance is recorded by
+\(\gamma_{M,\vec o}\) or \(\delta_{M,\vec o}\).
+For every
+\(i\in\finord k\) and \(s\in\finord{\ell_i}\), choose an actual
+\(\mathcal L\)-formula \(\psi_{i,s}\) whose free variables belong to \(X\),
+and define
+\(\Psi_i:Q_i\to
+\operatorname{Form}_{\mathcal L}(X)\) by
+\(\Psi_i(q_{i,s})=\psi_{i,s}\). Recursively replace every
+\(q_{i,s}\) in \(N_i\) by \(\psi_{i,s}\), fixing \(\top,\bot\), and
+preserving each connective, and
+write the resulting formula as \(\widehat N_i=N_i[\Psi_i]\). The outer
+formula-pattern substitution is the function
+
+\[
+\Phi:P\longrightarrow\operatorname{Form}_{\mathcal L}(X),
+\qquad \Phi(p_i)=\widehat N_i.
+\]
+
+Structural recursion yields a unique truth-constant-and-connective-preserving extension
+\((-)[\Phi]:\operatorname{Pat}(P)\to
+\operatorname{Form}_{\mathcal L}(X)\): it sends \(p_i\) to \(\Phi(p_i)\)
+and sends each connective to the same connective applied to the recursively
+substituted arguments. Write \(M[\Phi]\) for the image of \(M\) under this
+extension.
+
+The maps \(\Psi_i\) combine uniquely to
+\(\Psi:Q_{\mathrm{occ}}\to\operatorname{Form}_{\mathcal L}(X)\).
+Structural recursion yields its unique extension
+\((-)[\Psi]:\operatorname{Pat}(Q_{\mathrm{occ}})\to
+\operatorname{Form}_{\mathcal L}(X)\). Associativity of pattern substitution
+is the map identity
+\[
+(-)[\Psi]\circ(-)[\Phi_0]=(-)[\Phi],
+\]
+and hence, at \(M\), the equation
+\[
+\bigl(M[\Phi_0]\bigr)[\Psi]=M[\Phi].
+\]
+Both sides are obtained by the unique extension that sends \(p_i\) to
+\(N_i[\Psi_i]\), fixes \(\top,\bot\), and preserves every connective. The
+left side is therefore the formula obtained by instantiating the pattern
+underlying the \DP\ generalized composite.
+
+For an \(\mathcal L\)-structure \(\mathcal A\) and an assignment
+\(\atsign:X\to A\), define the induced truth assignment
+
+\[
+\atsign\mathbin\bullet\Phi:P\longrightarrow\mathbf 2,
+\qquad
+(\atsign\mathbin\bullet\Phi)(p_i)
+=S_X^{\mathcal A}(\Phi(p_i),\atsign).
+\]
+
+Write \(\atsign_\Phi:=\atsign\mathbin\bullet\Phi\) for this induced truth
+assignment.
+This use of \(\mathbin\bullet\) is the truth-valued analogue of the induced
+assignment \(\beta\mathbin\bullet\sigma\) for term substitution. The truth
+evaluation pairing has type
+
+\[
+S_P^{\mathbf 2}:\operatorname{Pat}(P)\times\mathbf 2^P
+\longrightarrow\mathbf 2.
+\]
+
+For \(v:P\to\mathbf2\), it is defined recursively by
+\(S_P^{\mathbf2}(p_i,v)=v(p_i)\),
+\(S_P^{\mathbf2}(\top,v)=\top\), and
+\(S_P^{\mathbf2}(\bot,v)=\bot\). For example,
+\(S_P^{\mathbf2}(\neg U,v)=\neg S_P^{\mathbf2}(U,v)\) and
+\(S_P^{\mathbf2}(U\wedge V,v)=
+S_P^{\mathbf2}(U,v)\wedge S_P^{\mathbf2}(V,v)\); every further connective
+uses its corresponding truth function.
+
+\Needspace{11\baselineskip}
+For a truth assignment \(\atsign_P:P\to\mathbf 2\), let
+\(S_{\atsign_P}^{\mathbf 2}=S_P^{\mathbf 2}(-,\atsign_P):
+\operatorname{Pat}(P)\to\mathbf 2\), and write
+\(M\,\atsign_P:\!\Longleftrightarrow
+S_P^{\mathbf 2}(M,\atsign_P)=\top\). Substitution of
+the formulas \(\Phi(p_i)\) for the formal arguments is compatible with the two
+satisfaction pairings, as expressed by the following commutative square:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+\operatorname{Pat}(P) \arrow[r,"{(-)[\Phi]}"]
+  \arrow[d,"S_{\atsign_\Phi}^{\mathbf 2}"'] &
+\operatorname{Form}_{\mathcal L}(X)
+  \arrow[d,"S_{\atsign}^{\mathcal A}"] \\
+\mathbf 2 \arrow[r,"1_{\mathbf 2}"'] & \mathbf 2
+\end{tikzcd}
+\]
+
+In the \(\atsign\)-calculus, this is the sliding law
+
+\[
+\boxed{
+\bigl(M[\Phi]\bigr)\,\atsign
+\quad\Longleftrightarrow\quad
+M\,\atsign_\Phi.
+}
+\]
+
+The law follows by structural induction on \(M\). At the placeholder
+\(p_i\), it is the defining equation for
+\(\atsign_\Phi=\atsign\mathbin\bullet\Phi\). At \(\top\) and \(\bot\), it is their
+respective truth clause. Each connective step follows from the corresponding
+truth function.
+
+Combining this sliding law with pattern-substitution associativity applies the
+\(\atsign\)-calculus directly to the instantiated \DP\ composite:
+\[
+\boxed{
+\bigl((M[\Phi_0])[\Psi]\bigr)\,\atsign
+\quad\Longleftrightarrow\quad
+M\,\atsign_\Phi.
+}
+\]
+
+The occurrence maps have a direct \(\atsign\)-labelled form. Give every
+formal argument of every inserted pattern its truth value under the current
+assignment by defining
+
+\[
+e_{\atsign}:C_{\vec\ell}\longrightarrow\mathbf 2,
+\qquad
+e_{\atsign}(i,s)=S_X^{\mathcal A}(\psi_{i,s},\atsign),
+\qquad
+d_{\atsign}:D_{M,\vec n}\longrightarrow\mathbf 2,
+\quad d_{\atsign}=e_{\atsign}\circ\gamma_{M,\vec o}.
+\]
+
+In the postfix \(\atsign\)-notation, these definitions say
+\[
+\begin{aligned}
+e_{\atsign}(i,s)=\top
+&\quad\Longleftrightarrow\quad \psi_{i,s}\,\atsign,\\
+d_{\atsign}(r,t)=\top
+&\quad\Longleftrightarrow\quad
+\psi_{o_M(r),\,o_{o_M(r)}(t)}\,\atsign.
+\end{aligned}
+\]
+
+Thus \(d_{\atsign}\) labels each pattern-level placeholder occurrence in the
+substituted pattern by pulling back the truth label of the formal argument from
+which it came. Occurrences internal to an actual formula \(\psi_{i,s}\) are
+represented here by the single truth value of that formula. In fibre
+coordinates this is the commutative triangle
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+D_{M,\vec n} \arrow[r,"\gamma_{M,\vec o}"]
+  \arrow[dr,"d_{\atsign}"'] &
+C_{\vec\ell} \arrow[d,"e_{\atsign}"] \\
+& \mathbf 2.
+\end{tikzcd}
+\]
+
+After the block encodings, put
+\(\bar e_{\atsign}=e_{\atsign}\circ\theta_C^{-1}\) and
+\(\bar d_{\atsign}=d_{\atsign}\circ\theta_D^{-1}\). The corresponding
+ordinal-coordinate triangle is
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+\finord{\pi(m)} \arrow[r,"\delta_{M,\vec o}"]
+  \arrow[dr,"\bar d_{\atsign}"'] &
+\finord{\lambda(k)} \arrow[d,"\bar e_{\atsign}"] \\
+& \mathbf 2.
+\end{tikzcd}
+\qquad
+\bar d_{\atsign}=\bar e_{\atsign}\circ\delta_{M,\vec o}.
+\]
+
+These diagrams are the direct interface between the \(\atsign\)-calculus and
+the occurrence operation: truth evaluation supplies the pattern-level
+formal-argument occurrence labels, and the
+occurrence maps transport those labels through substitution. Evaluating the
+connective tree of \(M[\Phi]\) then returns its single truth value.
+
+For the preceding example, replace \(a,b,c,d\) by actual formulas
+\(\psi_a,\psi_b,\psi_c,\psi_d\). Thus
+\(\widehat N_1=\psi_a\wedge\psi_b\),
+\(\widehat N_2=\psi_d\wedge(\psi_c\vee\psi_d)\),
+\(\Phi(p)=\widehat N_1\), and \(\Phi(q)=\widehat N_2\). Suppose
+\(\psi_a\,\atsign\), \(\psi_b\,\atsign\), and
+\(\psi_c\,\atsign\) are true, while \(\psi_d\,\atsign\) is false. In the
+target order \((a,b,c,d)\), the truth labels and their pullback along the
+computed occurrence map are
+
+\[
+\bar e_{\atsign}=(\top,\top,\top,\bot),
+\qquad
+\bar d_{\atsign}
+=\bar e_{\atsign}\circ\delta_{M,\vec o}
+=(\bot,\top,\bot,\top,\top,\bot,\top,\bot).
+\]
+
+The induced assignment to the outer arguments satisfies
+\(\atsign_\Phi(p)=\top\) and \(\atsign_\Phi(q)=\bot\). Hence
+
+\[
+S_P^{\mathbf 2}(M,\atsign_\Phi)
+=\bot\wedge(\top\vee\bot)=\bot,
+\]
+
+and the sliding law says that \(\bigl(M[\Phi]\bigr)\,\atsign\) is false.
+
+
+\section{Expansion of a language by names for a
+structure}\label{expansion-of-a-language-by-names-for-a-structure}
+
+Let \(\mathcal A\) be an \(\mathcal L\)-structure with domain \(A\). The
+expansion of \(\mathcal L\) by names for elements of \(A\), written here
+as \(\mathcal L_A\), adds a new constant symbol \(\bar c\) for every
+\(c\in A\). The symbols \(\bar c\) form a disjoint copy of \(A\): the
+element \(c\) lies in the domain, while its name \(\bar c\) is a formal
+constant in the expanded signature.
+
+Let \(\Sigma[A]\) be the expanded functional signature. A term over
+\(\Sigma[A]\) with variables in \(X\) is equivalently an original
+\(\Sigma\)-term whose leaves may be either named elements of \(A\) or
+variables in \(X\).
+
+\Needspace{8\baselineskip}
+This description by leaves yields a natural bijection
+\(\chi_X:T_{\Sigma[A]}X\xrightarrow{\cong}T_\Sigma(A+X)\).
+
+Here \(A+X\) is the disjoint union, or coproduct in \(\mathbf{Set}\),
+with canonical inclusions \(\operatorname{inl}:A\to A+X\) and
+\(\operatorname{inr}:X\to A+X\). Under this identification, the
+\(A\)-summand is held fixed by substitution, while the \(X\)-summand
+contains the substitutable variables.
+
+\Needspace{8\baselineskip}
+This bijection is \textbf{natural in \(X\)}: for every \(u:X\to Y\), the
+square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+T_{\Sigma[A]}X \arrow[r,"\chi_X"] \arrow[d,"T_{\Sigma[A]}u"'] &
+T_\Sigma(A+X) \arrow[d,"T_\Sigma(1_A+u)"] \\
+T_{\Sigma[A]}Y \arrow[r,"\chi_Y"'] & T_\Sigma(A+Y)
+\end{tikzcd}
+\]
+
+commutes. The monad structure on \(X\mapsto T_\Sigma(A+X)\) in this
+description is the expanded term-monad structure transported through
+\(\chi\).
+
+The inclusion of the original signature into the expanded signature induces
+the monad morphism \(j:T_\Sigma\Rightarrow T_{\Sigma[A]}\). Under the
+displayed identification, its component is typed by the commutative triangle
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+T_\Sigma X \arrow[r,"j_X"]
+  \arrow[dr,"T_\Sigma(\operatorname{inr})"'] &
+T_{\Sigma[A]}X \arrow[d,"\chi_X"] \\
+& T_\Sigma(A+X)
+\end{tikzcd}
+\]
+
+Here \(\operatorname{inr}:X\to A+X\) includes the variable summand.
+Thus \(j\) regards every original term as an expanded-language term
+without inserting any new constants. Because \(j\) is a monad morphism,
+this inclusion preserves variables and syntactic substitution.
+
+\Needspace{9\baselineskip}
+More generally, to give a \(\Sigma[A]\)-algebra structure on a set \(B\)
+is to give:
+
+\begin{itemize}
+\tightlist
+\item
+  a \(T_\Sigma\)-algebra \(b:T_\Sigma B\to B\); and
+\item
+  a function \(k:A\to B\) interpreting the newly added constants.
+\end{itemize}
+
+The full expanded algebra map \(h_{b,k}:T_{\Sigma[A]}B\to B\) is the outer
+path in
+
+\[
+\begin{tikzcd}[column sep=large]
+T_{\Sigma[A]}B \arrow[r,"\chi_B"]
+  \arrow[rrr,bend right=18,"{h_{b,k}}"'] &
+T_\Sigma(A+B) \arrow[r,"{T_\Sigma[k,1_B]}"] &
+T_\Sigma B \arrow[r,"b"] & B.
+\end{tikzcd}
+\]
+
+Here \([k,1_B]:A+B\to B\) is the \textbf{copairing} of \(k\) and the
+identity of \(B\): it sends the \(A\)-summand by \(k\) and the
+\(B\)-summand by \(1_B\). It is the unique function with those two
+restrictions.
+
+The expanded algebra retains the original \(\Sigma\)-operations.
+
+\Needspace{8\baselineskip}
+Their preservation is expressed by the following commutative restriction
+triangle:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+T_\Sigma B \arrow[r,"j_B"] \arrow[dr,"b"'] &
+T_{\Sigma[A]}B \arrow[d,"{h_{b,k}}"] \\
+& B.
+\end{tikzcd}
+\]
+
+The distinguished expansion \(\mathcal A^+\) of \(\mathcal A\) takes
+\(B=A\), retains every original relation \(R^{\mathcal A}\), and uses the pair
+\((a,1_A)\): the original algebra map \(a:T_\Sigma A\to A\) together with the
+identity interpretation of the new names. Denote the resulting specialization
+of the preceding path by \(a^+:T_{\Sigma[A]}A\to A\).
+In particular, \(\bar c^{\mathcal A^+}=c\) for every \(c\in A\).
+
+Restricting the functional reduct of \(\mathcal A^+\) along the monad
+morphism \(j\) recovers the functional reduct of \(\mathcal A\):
+this is the specialization \(B=A\), \(b=a\), and \(k=1_A\) of the restriction
+triangle. Forgetting the newly named constants changes none of the original
+operations.
+
+\Needspace{7\baselineskip}
+For ground terms, let \(\rho_A:A+\varnothing\xrightarrow{\cong}A\) be the
+canonical bijection. Ground-term evaluation is the map
+
+\[
+\begin{tikzcd}[column sep=large]
+T_{\Sigma[A]}\varnothing \arrow[r,"\chi_\varnothing"]
+  \arrow[rrr,bend right=18,"e_A"'] &
+T_\Sigma(A+\varnothing) \arrow[r,"T_\Sigma(\rho_A)"] &
+T_\Sigma A \arrow[r,"a"] & A.
+\end{tikzcd}
+\]
+After the canonical identification \(A+\varnothing\cong A\), this map is the
+original algebra map \(a:T_\Sigma A\to A\).
+
+The naming map \(\nu_A:A\to T_{\Sigma[A]}\varnothing\), given by
+\(c\mapsto\bar c\), is related to the original monad unit by the commutative
+square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+A \arrow[r,"\nu_A"] \arrow[d,"\operatorname{inl}"'] &
+T_{\Sigma[A]}\varnothing \arrow[d,"\chi_\varnothing"] \\
+A+\varnothing \arrow[r,"\eta^{T_\Sigma}_{A+\varnothing}"'] &
+T_\Sigma(A+\varnothing).
+\end{tikzcd}
+\]
+
+\Needspace{10\baselineskip}
+After the canonical identification \(A+\varnothing\cong A\), the square says
+that \(\nu_A\) corresponds to \(\eta_A^{T_\Sigma}:A\to T_\Sigma A\). The
+algebra unit triangle then makes the following section triangle commute:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+A \arrow[r,"\nu_A"] \arrow[dr,"1_A"'] &
+T_{\Sigma[A]}\varnothing \arrow[d,"e_A"] \\
+& A.
+\end{tikzcd}
+\]
+
+Thus every element has a chosen ground-term name, and evaluating that
+name returns the element. A \textbf{ground term} is a term with no
+variables. The section triangle says that \(\nu_A\) is a
+\textbf{section}, or right inverse, of ground-term evaluation. It need
+not be a two-sided inverse: many different ground terms can have the
+same value in \(\mathcal A^+\).
+
+Let \(\epsilon_A:\varnothing\to A\) be the unique empty assignment, and
+write \(\atsign_{\varnothing,\mathcal A^+}:=\epsilon_A\) when evaluation
+takes place in \(\mathcal A^+\). In this two-subscript notation for empty
+assignments, the first subscript records the variable context and the second
+specifies the structure. In the pairing calculus, the section equation says that
+evaluating a name returns its value:
+\(\atsign_{\varnothing,\mathcal A^+}\,\bar c=c\), where \(c\in A\).
+
+\Needspace{5\baselineskip}
+\section{Assignments as substitutions of
+names}\label{assignments-as-substitutions-of-names}
+
+The expansion \(\mathcal L_A\) converts an assignment into a syntactic
+substitution by ground terms. Given \(\alpha:X\to A\), define
+\(\bar\alpha:=\nu_A\circ\alpha:X\to T_{\Sigma[A]}\varnothing\).
+
+\Needspace{7\baselineskip}
+This definition is encoded by the commutative triangle
+
+\[
+\begin{tikzcd}[column sep=huge]
+X \arrow[r,"\alpha"]
+  \arrow[rr,bend right=18,"\bar\alpha"'] &
+A \arrow[r,"\nu_A"] & T_{\Sigma[A]}\varnothing.
+\end{tikzcd}
+\]
+
+The Kleisli substitution \(\bar\alpha\) sends each variable \(x\) to the
+constant \(\overline{\alpha(x)}\). Regard every
+original term as an expanded-language term by \(j_X\). The inclusion of
+languages also induces
+\(\iota_X:\operatorname{Form}_{\mathcal L}(X)\to
+\operatorname{Form}_{\mathcal L_A}(X)\). Throughout this section, an original
+formula is regarded as an expanded-language formula by \(\iota_X\). To keep the calculations readable,
+write \(t[\bar\alpha]\) for \(\bar\alpha^*(j_X(t))\) and
+\(\varphi[\bar\alpha]\) for
+\(\iota_X(\varphi)[\bar\alpha]\).
+
+\Needspace{14\baselineskip}
+\paragraph{Categorical form.}
+For \(t\in T_\Sigma X\) and
+\(\varphi\in\operatorname{Form}_{\mathcal L}(X)\), evaluation factors through
+the language inclusion and the Kleisli extension of \(\bar\alpha\). The two
+factorizations are the outer paths in the following typed diagrams:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+T_\Sigma X
+  \arrow[r,"j_X"]
+  \arrow[drr,bend right=18,"{E_X^{\mathcal A}(\alpha,-)}"'] &
+T_{\Sigma[A]}X \arrow[r,"\bar\alpha^*"] &
+T_{\Sigma[A]}\varnothing \arrow[d,"e_A"] \\
+&& A
+\end{tikzcd}
+\]
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+\operatorname{Form}_{\mathcal L}(X)
+  \arrow[r,"\iota_X"]
+  \arrow[drr,bend right=18,"{S_X^{\mathcal A}(-,\alpha)}"'] &
+\operatorname{Form}_{\mathcal L_A}(X)
+  \arrow[r,"{(-)[\bar\alpha]}"] &
+\operatorname{Form}_{\mathcal L_A}(\varnothing)
+  \arrow[d,"{S_\varnothing^{\mathcal A^+}(-,\epsilon_A)}"] \\
+&& \mathbf 2
+\end{tikzcd}
+\]
+
+The first diagram applies ground-term evaluation to \(t[\bar\alpha]\). The
+second evaluates the truth value of the sentence \(\varphi[\bar\alpha]\);
+replacing every free variable by a name leaves the empty assignment as its only
+assignment argument.
+
+\paragraph{At-sign calculation.}
+Set \(\atsign=\alpha\), write
+\(\overline{\atsign}:=\nu_A\circ\atsign\), and evaluate the resulting
+closed expressions using \(\atsign_{\varnothing,\mathcal A^+}\). The same two maps
+satisfy the calculation rules
+
+\[
+\boxed{
+\atsign_{\mathcal A}\,t
+=\atsign_{\varnothing,\mathcal A^+}\bigl(t[\overline{\atsign}]\bigr),
+\qquad
+\varphi\,\atsign_{\mathcal A}
+\ \Longleftrightarrow\ 
+\varphi[\overline{\atsign}]\,\atsign_{\varnothing,\mathcal A^+}.
+}
+\]
+
+Thus the bar over \(\atsign\) changes an assignment into a substitution of
+names, while the prefix or postfix position of the assignment symbol marks
+term evaluation or satisfaction. The right-hand expressions are evaluated in
+the distinguished expanded structure \(\mathcal A^+\).
+
+\paragraph{Traditional notation.}
+Ordinary evaluation brackets and satisfaction notation express the two rules
+as follows:
+
+\[
+\llbracket t\rrbracket^{\mathcal A}_\alpha
+=\llbracket t[\bar\alpha]\rrbracket^{\mathcal A^+}_{\epsilon_A},
+\qquad
+\mathcal A,\alpha\models\varphi
+\ \Longleftrightarrow\ 
+\mathcal A^+,\epsilon_A\models\varphi[\bar\alpha].
+\]
+
+Assignment modification is also represented syntactically. For \(x\in X\) and
+\(c\in A\),
+\(\overline{\alpha[x\mapsto c]}=\bar\alpha[x\mapsto\bar c]\). For the
+following equations, write \(t[x:=\bar c]\) for \(j_X(t)[x:=\bar c]\) and
+\(\varphi[x:=\bar c]\) for \(\iota_X(\varphi)[x:=\bar c]\), regarding the
+ground constant \(\bar c\) as a term in the variable context \(X\). The
+structures \(\mathcal A\) and \(\mathcal A^+\) have the same domain, so the
+same function \(\alpha:X\to A\) is an assignment in both. The substitution
+lemmas yield
+
+\[
+\begin{aligned}
+\llbracket t\rrbracket^{\mathcal A}_{\alpha[x\mapsto c]}
+&=\llbracket t[x:=\bar c]\rrbracket^{\mathcal A^+}_\alpha,\\
+\mathcal A,\alpha[x\mapsto c]\models\varphi
+&\quad\Longleftrightarrow\quad
+\mathcal A^+,\alpha\models\varphi[x:=\bar c].
+\end{aligned}
+\]
+
+In the \(\atsign\)-calculus, where the structure subscript distinguishes
+evaluation in \(\mathcal A\) from evaluation in \(\mathcal A^+\), these are
+
+\[
+\boxed{
+(\atsign\vert_c^x)_{\mathcal A}\,t
+=\atsign_{\mathcal A^+}(\vert_{\bar c}^x t),
+\qquad
+\varphi\,(\atsign\vert_c^x)_{\mathcal A}
+\ \Longleftrightarrow\ 
+(\varphi\vert_{\bar c}^x)\,\atsign_{\mathcal A^+}.
+}
+\]
+
+The expansion therefore internalizes assignments as substitutions of
+constant names. It supplies a chosen ground-term name for every element, and
+the algebra map evaluates those terms back into the structure.
+
+\paragraph{Example: replacing an assignment by names.}
+Let \(\mathbb N^+\) add a constant \(\bar n\) for every natural number.
+Take \(X=\{x,y,z\}\), \(t=x\cdot(y+1)\),
+\(\varphi=(t=z)\), and an assignment \(\atsign:X\to\mathbb N\) with
+\(\atsign(x)=2\), \(\atsign(y)=3\), and \(\atsign(z)=8\). Categorically,
+\(\overline{\atsign}=\nu_{\mathbb N}\circ\atsign\) is the ground-term
+substitution with
+\(t[\overline{\atsign}]=\bar2\cdot(\bar3+1)\) and
+\(\varphi[\overline{\atsign}]=
+(\bar2\cdot(\bar3+1)=\bar8)\). The corresponding \(\atsign\)-calculation is
+
+\[
+\atsign_{\mathbb N}\,t
+=\atsign_{\varnothing,\mathbb N^+}\bigl(\bar2\cdot(\bar3+1)\bigr)
+=2\cdot(3+1)=8,
+\qquad
+\varphi\,\atsign_{\mathbb N}
+\ \Longleftrightarrow\ 
+(\bar2\cdot(\bar3+1)=\bar8)\,\atsign_{\varnothing,\mathbb N^+}.
+\]
+
+The ordinary textbook statement is
+\(\mathbb N,\atsign\models x\cdot(y+1)=z\) if and only if the sentence
+\(\bar2\cdot(\bar3+1)=\bar8\) is true in \(\mathbb N^+\). The categorical
+map and the \(\atsign\)-calculation express the same replacement of an
+assignment by constant names.
+
+\section{Further perspective: functorial models and generalized points}
+\label{functorial-models}
+
+This section may be skipped on a first reading. The functorial reformulation
+extends term algebras, assignment actions, and satisfaction from set-based
+models to models valued in other categories.
+
+The action of substitutions on assignments already defines a functor. Fix the
+functional structure \((A,a)\). Assign to each variable set \(X\) its set
+\(A^X\) of assignments, and send a Kleisli substitution
+\(\sigma:X\to T_\Sigma Y\) to the map
+\(P_a(\sigma):A^Y\to A^X\) defined earlier.
+
+\Needspace{11\baselineskip}
+For
+\(\sigma:X\to T_\Sigma Y\) and \(\tau:Y\to T_\Sigma Z\), the composition
+and identity laws are typed by the following commutative triangles:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+A^Z \arrow[r,"P_a(\tau)"]
+  \arrow[dr,"P_a(\tau\star\sigma)"'] &
+A^Y \arrow[d,"P_a(\sigma)"] \\
+& A^X.
+\end{tikzcd}
+\qquad
+\begin{tikzcd}[row sep=large,column sep=large]
+& A^X \arrow[dl,"P_a(\eta_X)"'] \arrow[dr,"1_{A^X}"] & \\
+A^X \arrow[rr,"1_{A^X}"'] && A^X.
+\end{tikzcd}
+\]
+
+These laws make
+\(P_a:\mathbf{Kl}(T_\Sigma)^{\mathrm{op}}\to\mathbf{Set}\) a contravariant
+functor, with
+\(P_a(X)=A^X\). The algebra law therefore organizes assignments over all
+variable contexts at once.
+
+For a finitary term monad, the assignment functor is the set-valued instance of
+Lawvere's functorial semantics \cite{Lawvere1963}. Let \(\mathbb L_\Sigma\) be the full
+subcategory of \(\mathbf{Kl}(T_\Sigma)^{\mathrm{op}}\) on finite cardinals.
+Its arrows satisfy
+\(\mathbb L_\Sigma(n,m)\cong(T_\Sigma n)^m\): an arrow \(n\to m\) is an
+\(m\)-tuple of terms in \(n\) variables. This is the \textbf{Lawvere theory}
+of \(\Sigma\). Finite products generalize Cartesian products by their universal
+mapping property. A model in a category \(\mathcal C\) with finite products is
+a product-preserving functor \(M:\mathbb L_\Sigma\to\mathcal C\); that is, it
+sends the abstract product diagrams to product diagrams. Natural
+transformations between models are homomorphisms. Taking
+\(\mathcal C=\mathbf{Set}\) recovers the \(T_\Sigma\)-algebras used above;
+for an equational theory, one instead quotients the arrows by provable equality
+of terms.
+
+Changing the target category produces further examples. The Lawvere
+theory of groups yields ordinary groups in \(\mathbf{Set}\), topological
+groups in \(\mathbf{Top}\), sheaves of groups in \(\mathbf{Sh}(S)\), and
+group schemes over \(S\) in \(\mathbf{Sch}/S\).
+
+\Needspace{8\baselineskip}
+For a homomorphism
+\(h:G\to H\), naturality at multiplication is the familiar commutative
+square
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+G\times G \arrow[r,"m_G"] \arrow[d,"h\times h"'] &
+G \arrow[d,"h"] \\
+H\times H \arrow[r,"m_H"'] & H .
+\end{tikzcd}
+\]
+
+Its commutativity is the equation \(h(g_1g_2)=h(g_1)h(g_2)\). A morphism
+of theories induces a reduct functor between model categories by
+precomposition, while a finite-product-preserving functor between target
+categories transports models by postcomposition.
+
+\subsection{Relations, geometric logic, and classifying toposes}
+
+A Lawvere theory describes operations and equations. Relation symbols and the
+operations of geometric logic---finite conjunction, arbitrary disjunction,
+and existential quantification---require a richer syntactic category. For a
+geometric theory \(\mathbb T\), its classifying topos
+\(\mathcal E_{\mathbb T}\) and universal model \(U_{\mathbb T}\) have the
+following classifying property~\cite[pp.~3--5]{CaramelloClassifying}:
+
+\[
+\operatorname{Geom}(\mathcal E,\mathcal E_{\mathbb T})
+\simeq
+\mathbb T\text{-}\operatorname{Mod}(\mathcal E),
+\qquad f\longmapsto f^*U_{\mathbb T}.
+\]
+
+The equivalence is natural in every Grothendieck topos \(\mathcal E\). A
+\textbf{Grothendieck topos} is a category of sheaves on a site, up to
+equivalence; a site is a category with a notion of covering. A
+\textbf{geometric morphism} \(f:\mathcal E\to\mathcal F\) is an adjunction
+\(f^*\dashv f_*\) with \(f^*\) preserving finite limits.
+
+\Needspace{11\baselineskip}
+For a geometric morphism
+\(g:\mathcal E'\to\mathcal E\), naturality means that the following square
+commutes up to natural isomorphism:
+
+\[
+\begin{tikzcd}[row sep=large,column sep=large]
+\operatorname{Geom}(\mathcal E,\mathcal E_{\mathbb T})
+  \arrow[r,"f\mapsto f^*U_{\mathbb T}"]
+  \arrow[d,"(-)\circ g"'] &
+\mathbb T\text{-}\operatorname{Mod}(\mathcal E)
+  \arrow[d,"g^*"] \\
+\operatorname{Geom}(\mathcal E',\mathcal E_{\mathbb T})
+  \arrow[r,"f\mapsto f^*U_{\mathbb T}"'] &
+\mathbb T\text{-}\operatorname{Mod}(\mathcal E').
+\end{tikzcd}
+\]
+
+A \textbf{point} of
+a topos \(\mathcal F\) is a geometric morphism
+\(\mathbf{Set}\to\mathcal F\). Thus ordinary set-based models correspond,
+up to the displayed equivalence, to points of \(\mathcal E_{\mathbb T}\);
+models internal to another topos correspond to generalized points. This
+statement applies directly to geometric theories. A classical first-order
+theory can first be Morleyized to a coherent, hence geometric, theory while
+retaining the same set-based models up to canonical expansion and reduct;
+internal models then have the semantics of that Morleyization.
+
+The satisfaction pairing also generalizes. Let \(A\) be the carrier of an
+internal \(\mathbb T\)-model in a Grothendieck topos \(\mathcal E\), let
+\(V\) be an object of \(\mathcal E\), and put \(X=\{1,\ldots,n\}\). A
+generalized assignment is an arrow \(\atsign:V\to A^n\). A geometric formula
+\(\varphi\) in the context \(X\) is interpreted by a subobject
+\(\llbracket\varphi\rrbracket\hookrightarrow A^n\), and its locus of
+satisfaction is the pullback \(V_\varphi\hookrightarrow V\):
+
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+V_\varphi \arrow[r] \arrow[d,hook']
+  \arrow[dr,phantom,"\lrcorner",very near start] &
+\llbracket\varphi\rrbracket \arrow[d,hook] \\
+V \arrow[r,"\atsign"'] & A^n .
+\end{tikzcd}
+\]
+
+For \(\mathcal E=\mathbf{Set}\) and \(V=1\), the subobject
+\(V_\varphi\hookrightarrow1\) is either false or true, recovering the
+\(\mathbf2\)-valued pairing used earlier. In a general topos, the satisfaction
+locus is a subobject of the stage \(V\); global truth values are arrows
+\(1\to\Omega_{\mathcal E}\).
+
+\subsection{A literal spectrum example}
+
+The comparison with algebraic geometry can be made exact. Let \(R\) be a
+commutative ring. Introduce one proposition \(D(f)\) for each \(f\in R\) and
+impose the geometric sequents \cite{Manuell2022}
+
+\[
+D(0)\vdash\bot,\qquad
+\top\vdash D(1),\qquad
+D(fg)\dashv\vdash D(f)\wedge D(g),\qquad
+D(f+g)\vdash D(f)\vee D(g).
+\]
+
+\Needspace{9\baselineskip}
+A set-based model selects the elements \(f\) for which \(D(f)\) holds. This
+set is a prime anti-ideal; classically, its complement is a prime ideal. The
+classifying locale of this propositional geometric theory is the Zariski locale
+underlying \(\operatorname{Spec}R\); its classifying topos is the associated
+localic topos \(\mathbf{Sh}(\operatorname{Spec}R)\). A \textbf{locale} describes a
+space through its lattice of open sets. Thus, when
+\(R\) is the coordinate
+ring of an affine curve, set-based models correspond bijectively, classically,
+to the scheme-theoretic points of the curve, including its non-closed points. A prime
+\(\mathfrak p\) also determines the field-valued point
+\(\operatorname{Spec}\kappa(\mathfrak p)\to\operatorname{Spec}R\)
+\cite{StacksPoints}. This is an instance of models as points.
+
+\Needspace{12\baselineskip}
+\section{Ultraproducts, stalks, and the
+\texorpdfstring{\(\atsign\)}{@}-calculus}
+\label{ultraproducts-at-calculus}
+
+The distinction between term evaluation and satisfaction persists under
+ultraproducts. Prefix \(\atsign\) calculates a term's value in the ultraproduct;
+postfix \(\atsign\) expresses the transfer of satisfaction in
+\L{}o\'s's theorem. The interpretation of an ultraproduct as a sheaf stalk
+then realizes satisfaction as membership in a clopen subset of an
+extremally disconnected space. These constructions also distinguish
+evaluation of a fixed finite expression from the formation of an
+ultraproduct of syntax sets.
+
+\subsection{Assignments and term evaluation}
+
+Work in classical set theory with choice. Let \(I\) be a set, and let
+\(\mathcal U\) be an ultrafilter on \(I\): a collection of subsets closed
+under supersets and finite intersections, containing \(I\) and excluding
+\(\varnothing\), such that exactly one of \(B\) and \(I\setminus B\) belongs
+to \(\mathcal U\) for each \(B\subseteq I\).
+Let \((\mathcal A_i)_{i\in I}\) be nonempty structures in one finitary
+first-order language \(\mathcal L\), with functional signature \(\Sigma\)
+and underlying sets \(A_i\).
+
+Put \(C=\prod_{i\in I}A_i\). For \(a,b\in C\), define
+\(a\sim_{\mathcal U}b\) when
+\(\{i:a_i=b_i\}\in\mathcal U\). The ultraproduct
+\(\mathcal A_{\mathcal U}=\prod_{\mathcal U}\mathcal A_i\) has underlying
+set \(A_{\mathcal U}=C/{\sim_{\mathcal U}}\). Write
+\(q_{\mathcal U}:C\to A_{\mathcal U}\) for the quotient map and
+\([a]_{\mathcal U}=q_{\mathcal U}(a)\). Function symbols act on
+representatives coordinatewise; a relation holds of classes precisely when
+it holds of their representatives on a member of \(\mathcal U\).
+The ultrafilter's closure under finite intersections makes these
+interpretations independent of representatives.
+
+Fix a finite set \(X\) of variables and assignments
+\(\atsign_i:X\to A_i\). Their product is the assignment
+\(\atsign_C:X\to C\) given by
+\(\atsign_C(x)=(\atsign_i(x))_{i\in I}\). The induced ultraproduct
+assignment is
+\(\atsign_{\mathcal U}=q_{\mathcal U}\circ\atsign_C:X\to A_{\mathcal U}\).
+For \(t\in T_\Sigma X\), put
+\(e(t)=(\atsign_i\,t)_{i\in I}\in C\).
+
+\Needspace{11\baselineskip}
+The term-evaluation triangle is
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+T_\Sigma X \arrow[r,"e"]
+  \arrow[dr,"\llbracket-\rrbracket^{\mathcal A_{\mathcal U}}_{\atsign_{\mathcal U}}"'] &
+C \arrow[d,"q_{\mathcal U}"] \\
+& A_{\mathcal U}.
+\end{tikzcd}
+\]
+Its calculational form is
+\[
+\boxed{\atsign_{\mathcal U}\,t
+=[(\atsign_i\,t)_{i\in I}]_{\mathcal U}.}
+\]
+Indeed, the equation for a variable is the definition of
+\(\atsign_{\mathcal U}\). If it holds for \(t_1,\ldots,t_n\), the
+coordinatewise interpretation of \(f\in\Sigma\) proves it for
+\(f(t_1,\ldots,t_n)\). This is structural induction on \(t\), including
+the nullary case. Equivalently, \(q_{\mathcal U}\) is a homomorphism of
+the functional reducts, and homomorphisms commute with term evaluation.
+
+\subsection{Satisfaction, witnesses, and substitution}
+
+For \(\varphi\in\operatorname{Form}_{\mathcal L}(X)\), define its set of
+satisfying indices by
+\(B_\varphi=\{i\in I:\varphi\,\atsign_i\}\).
+Let \(u_{\mathcal U}:\mathcal P(I)\to\mathbf2\) take the value
+\(\top\) exactly on the members of \(\mathcal U\). It preserves finite
+Boolean operations: intersections represent conjunction, complements
+represent negation, and unions represent disjunction.
+
+\Needspace{12\baselineskip}
+\L{}o\'s's theorem~\cite[Corollary~10]{LurieUltraproducts} states that the
+following square commutes:
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+\operatorname{Form}_{\mathcal L}(X)
+  \arrow[r,"\varphi\mapsto B_\varphi"]
+  \arrow[d,"S^{\mathcal A_{\mathcal U}}_{\atsign_{\mathcal U}}"'] &
+\mathcal P(I) \arrow[d,"u_{\mathcal U}"] \\
+\mathbf2 \arrow[r,"1_{\mathbf2}"'] & \mathbf2.
+\end{tikzcd}
+\]
+In the postfix notation, this is
+\[
+\boxed{\varphi\,\atsign_{\mathcal U}
+\quad\Longleftrightarrow\quad
+\{i\in I:\varphi\,\atsign_i\}\in\mathcal U.}
+\]
+
+Here is a proof in the assignment calculus. Atomic equality follows from
+the term-evaluation identity and the definition of
+\(\sim_{\mathcal U}\); the other atomic cases follow from the
+interpretation of relation symbols. Finite Boolean connectives follow
+from the corresponding properties of \(u_{\mathcal U}\).
+
+For the existential step, suppose
+\(B=\{i:((\exists x)\psi)\,\atsign_i\}\in\mathcal U\).
+Choose \(b_i\in A_i\) such that
+\(\psi(\atsign_i\vert_{b_i}^{x})\) for each \(i\in B\), and choose an
+arbitrary \(b_i\in A_i\) elsewhere. Put \(b=[(b_i)]_{\mathcal U}\).
+The updated assignments \(\atsign_i\vert_{b_i}^{x}\), on the context
+\(X\cup\{x\}\), induce exactly
+\(\atsign_{\mathcal U}\vert_b^{x}\). The induction hypothesis applied to
+\(\psi\) therefore yields
+\(\psi(\atsign_{\mathcal U}\vert_b^{x})\), and hence
+\(((\exists x)\psi)\,\atsign_{\mathcal U}\).
+Conversely, represent a witness \(b\in A_{\mathcal U}\) by a tuple
+\((b_i)\). The induction hypothesis says that
+\(\{i:\psi(\atsign_i\vert_{b_i}^{x})\}\in\mathcal U\); this set is
+contained in \(B\), so \(B\in\mathcal U\).
+Universal quantification follows from
+\((\forall x)\psi\equiv\neg(\exists x)\neg\psi\).
+
+The same update calculation combines transfer with the substitution
+lemma. For \(x\in X\), \(s\in T_\Sigma X\), and capture-avoiding
+substitution, it yields
+\[
+\begin{aligned}
+(\varphi\vert_s^x)\,\atsign_{\mathcal U}
+&\quad\Longleftrightarrow\quad
+\varphi\bigl(\atsign_{\mathcal U}
+                  \vert_{\atsign_{\mathcal U}\,s}^{x}\bigr)\\
+&\quad\Longleftrightarrow\quad
+\bigl\{i:\varphi\bigl(\atsign_i\vert_{\atsign_i\,s}^{x}\bigr)\bigr\}
+\in\mathcal U.
+\end{aligned}
+\]
+The first step moves syntactic substitution to the assignment; the second
+applies \L{}o\'s's theorem to the family of updated assignments.
+
+\Needspace{12\baselineskip}
+\subsection{Ultraproducts as stalks and truth as a locus}
+
+Regard \(I\) as a discrete space. Its Stone--\v{C}ech compactification
+\(\beta I\) is the space of ultrafilters on \(I\), with clopen basis
+\(\widehat B=\{\mathcal V:B\in\mathcal V\}\), for \(B\subseteq I\).
+The map \(B\mapsto\widehat B\) identifies \(\mathcal P(I)\) with the
+Boolean algebra of clopen subsets of \(\beta I\).
+An index \(i\) corresponds to the principal ultrafilter
+\(\{B\subseteq I:i\in B\}\).
+
+Let \(j:I\hookrightarrow\beta I\) be this inclusion.
+The family \((A_i)\) is a sheaf on \(I\), whose sections over
+\(B\subseteq I\) are \(\prod_{i\in B}A_i\).
+Its direct image \(\mathcal F\) on \(\beta I\) satisfies
+\(\mathcal F(\widehat B)=\prod_{i\in B}A_i\), with restriction maps
+given by coordinate projections. Consequently,
+\[
+\mathcal F_{\mathcal U}
+=\varinjlim_{B\in\mathcal U}\prod_{i\in B}A_i
+\cong A_{\mathcal U},
+\]
+where the colimit is taken along restriction to smaller members of
+\(\mathcal U\). Two local sections have the same germ precisely when
+they agree after restriction to a common member of \(\mathcal U\).
+Nonemptiness and choice allow a tuple on such a member to extend to
+all of \(I\), giving the displayed identification with the quotient
+ultraproduct~\cite[Example~14]{LurieUltraproducts}.
+
+The assignments \(\atsign_i\) determine
+\(\atsign_\beta:1\to\mathcal F^X\) in
+\(\mathbf{Sh}(\beta I)\), where \(1\) is the terminal sheaf.
+Its stalk at \(\mathcal U\) is \(\atsign_{\mathcal U}\).
+Term evaluation yields the global section
+\(\atsign_\beta\,t=(\atsign_i\,t)_i\).
+The germ map \(g_{\mathcal U}:\mathcal F(\beta I)\to\mathcal F_{\mathcal U}\)
+therefore satisfies
+\(g_{\mathcal U}(\atsign_\beta\,t)=\atsign_{\mathcal U}\,t\).
+Prefix \(\atsign\) returns a section before taking the stalk and an
+element afterwards.
+
+For the chosen assignments, \L{}o\'s's theorem also identifies the locus
+of ultrafilters satisfying a fixed first-order formula:
+\[
+\{\mathcal V\in\beta I:\varphi\,\atsign_{\mathcal V}\}
+=\widehat{B_\varphi}.
+\]
+This has the internal satisfaction-locus interpretation for coherent
+formulas, built from atomic formulas using finite conjunctions, finite
+disjunctions, and existential quantification. Interpret the structures
+as a sheaf model \(\mathcal F\); let
+\(\llbracket\varphi\rrbracket_{\mathcal F}\hookrightarrow\mathcal F^X\)
+be the interpreted relation. For an open subset \(O\subseteq\beta I\),
+write \(1_O\hookrightarrow1\) for its associated subterminal sheaf:
+its sections over an open \(W\) form a singleton if \(W\subseteq O\)
+and are empty otherwise.
+Then the following square is a pullback:
+
+\Needspace{10\baselineskip}
+\[
+\begin{tikzcd}[row sep=large,column sep=huge]
+1_{\widehat{B_\varphi}} \arrow[r] \arrow[d,hook']
+  \arrow[dr,phantom,"\lrcorner",very near start] &
+\llbracket\varphi\rrbracket_{\mathcal F} \arrow[d,hook] \\
+1 \arrow[r,"\atsign_\beta"'] & \mathcal F^X.
+\end{tikzcd}
+\]
+Indeed, direct image along \(j\) preserves finite limits, finite
+coproducts, and images in this situation, so it preserves coherent
+interpretation~\cite[Corollary~1.10]{HaineCondensedPoints}.
+For arbitrary first-order formulas, the same description applies to
+their predicates in the canonical coherent Morleyization.
+At a general stage \(V\) of an internal model, satisfaction remains a
+subobject \(V_\varphi\hookrightarrow V\); at a set-valued point it
+reduces to the postfix assertion \(\varphi\,\atsign\).
+
+The space \(\beta I\) is compact Hausdorff and extremally disconnected:
+closures of open subsets are open.
+Such spaces form a defining site for condensed mathematics. With size
+bounds fixed, condensed sets can be described as contravariant functors
+on these spaces that take finite disjoint unions to
+products~\cite[Example~2.5 and Proposition~2.8]{ScholzeCondensed}.
+For a coherent theory \(\mathbb T\), the analogous assignment
+\[
+\mathbf{Mod}_{\mathbb T}(K)
+=\mathbb T\text{-}\operatorname{Mod}\bigl(\mathbf{Sh}(K)\bigr)
+\]
+defines a condensed category of models: inverse image determines its
+contravariant dependence on \(K\), and disjoint unions of spaces yield
+products of model categories. Its value at a point is the ordinary
+category of set-based models. An indexed family of \(\mathbb T\)-models
+extends to an object
+over \(\beta I\), and its value at an ultrafilter point is the
+corresponding ultraproduct~\cite[Example~0.2 and Proposition~1.6]{HaineCondensedPoints}.
+Here ordinary sheaves on each \(K\) supply the values of the condensed
+category as \(K\) varies.
+
+\subsection{Finite fields and an infinite disjunction}
+
+Let \(P\) be the set of primes and take \(\mathcal A_p=\mathbb F_p\).
+Use \(\atsign_p:\varnothing\to\mathbb F_p\) for the empty assignment.
+For \(m\geq1\), let
+\(\chi_m=(m\cdot1=0)\), where \(m\cdot1\) abbreviates the term formed
+by adding \(1\) to itself \(m\) times. Then
+\(B_{\chi_m}=\{p\in P:p\mid m\}\) is finite.
+
+A nonprincipal ultrafilter contains no finite set: if a finite union of
+singletons belongs to an ultrafilter, one of those singletons belongs
+to it, making it principal. Hence
+\(\neg(\chi_m\,\atsign_{\mathcal U})\) for every \(m\geq1\) and every
+nonprincipal \(\mathcal U\) on \(P\).
+The ultraproduct is a field by \L{}o\'s's theorem, and these inequalities
+show that its characteristic is zero.
+
+Now form the infinitary geometric sentence
+\(\psi=\bigvee_{m\geq1}\chi_m\).
+Every \(\psi\,\atsign_p\) is true, since \(\chi_p\,\atsign_p\) is true.
+But \(\psi\,\atsign_{\mathcal U}\) is false at every nonprincipal
+ultrafilter: none of its disjuncts holds there.
+The first-order transfer theorem does not include this infinite
+disjunction.
+
+The sheaf interpretation makes the difference explicit.
+Each \(\widehat{B_{\chi_m}}\) consists of the finitely many principal
+points indexed by primes dividing \(m\). The satisfaction locus of the
+geometric disjunction in \(\mathbf{Sh}(\beta P)\) is therefore
+\[
+\bigcup_{m\geq1}\widehat{B_{\chi_m}}=P\subset\beta P.
+\]
+This open subset is dense and proper, and so is not clopen. Density
+follows because every nonempty basic clopen meets \(P\); properness
+follows from the existence of nonprincipal ultrafilters.
+Taking a stalk preserves the geometric disjunction, which is false at
+every point of \(\beta P\setminus P\).
+The direct-image functor \(j_*\), however, does not preserve this
+infinite disjunction: the disjunction is everywhere true on \(P\),
+whose terminal sheaf has direct image the terminal sheaf on \(\beta P\).
+Thus a satisfaction locus can carry more information than a single
+external truth value.
+
+\subsection{Fixed terms and ultraproducts of syntax}
+
+The prefix evaluation identity uses one fixed term
+\(t\in T_\Sigma X\). The comparison between forming terms and forming
+ultraproducts has a different type:
+\[
+\lambda_{\mathcal U}:
+T_\Sigma\!\left(\prod_{\mathcal U}A_i\right)
+\longrightarrow
+\prod_{\mathcal U}T_\Sigma A_i.
+\]
+To construct it, give the target its coordinatewise
+\(\Sigma\)-algebra structure and send a variable
+\([a]_{\mathcal U}\) to
+\([(\eta_{A_i}(a_i))_i]_{\mathcal U}\).
+This variable map is well-defined, since representatives agreeing on
+a member of \(\mathcal U\) have corresponding variable terms agreeing
+there. The free-algebra property extends it uniquely to
+\(\lambda_{\mathcal U}\).
+Since a term has only finitely many variable occurrences, its image can
+be computed by choosing representatives of their labels in
+\(A_{\mathcal U}\) and keeping the same term shape in every coordinate.
+
+The comparison need not be surjective. Let \(I=\mathbb N\), let
+\(\mathcal U\) be nonprincipal, let every \(A_i=\{*\}\), and let
+\(\Sigma\) consist of one unary symbol \(f\). Then
+\(T_\Sigma(\prod_{\mathcal U}A_i)=T_\Sigma\{*\}\) consists of the terms
+\(f^n(*)\), for \(n\in\mathbb N\), and
+\(\lambda_{\mathcal U}(f^n(*))=[(f^n(*))_i]_{\mathcal U}\).
+The target also contains
+\[
+\tau=[(f^i(*))_{i\in\mathbb N}]_{\mathcal U}.
+\]
+For each fixed \(n\), the equality \(f^i(*)=f^n(*)\) holds only when
+\(i=n\), so \(\tau\neq\lambda_{\mathcal U}(f^n(*))\).
+Its representatives have unbounded term depth.
+Thus the ultraproduct of term sets contains elements that are not
+represented by any ordinary finite term over the ultraproduct.
+This does not affect the evaluation identity for a fixed term.
+
+\subsection{Names in a common expanded language}
+
+The expansion by names also applies, using a common signature for all
+factors. Retain \(C=\prod_i A_i\), and add a constant \(\bar c\) for
+each \(c\in C\), obtaining \(\mathcal L_C\).
+Interpret \(\bar c\) in \(\mathcal A_i^C\) as \(c_i\), and in
+\(\mathcal A_{\mathcal U}^C\) as \([c]_{\mathcal U}\).
+These are the expansions determined by the maps
+\(C\to A_i\) and \(q_{\mathcal U}:C\to A_{\mathcal U}\), respectively.
+The expanded ultraproduct is precisely
+\(\mathcal A_{\mathcal U}^C=\prod_{\mathcal U}\mathcal A_i^C\).
+
+Write \(\atsign_{\varnothing,\mathcal A_i^C}:\varnothing\to A_i\) and
+\(\atsign_{\varnothing,\mathcal A_{\mathcal U}^C}:\varnothing\to A_{\mathcal U}\)
+for the empty assignments in these expanded structures. The name-evaluation calculation is
+\[
+\atsign_{\varnothing,\mathcal A_{\mathcal U}^C}\,\bar c
+=[(\atsign_{\varnothing,\mathcal A_i^C}\,\bar c)_i]_{\mathcal U}
+=[c]_{\mathcal U}.
+\]
+Different names \(\bar c,\bar d\) have the same value precisely when
+\(c\sim_{\mathcal U}d\); they remain different symbols when \(c\neq d\).
+
+The product assignment \(\atsign_C:X\to C\) determines the common
+ground-term substitution
+\(\overline{\atsign_C}=\nu_C\circ\atsign_C:
+X\to T_{\Sigma[C]}\varnothing\).
+Its value at \(x\) is the name of the tuple
+\((\atsign_i(x))_i\).
+For an original term \(t\) and formula \(\varphi\), regarded in
+\(\mathcal L_C\), the naming identities are
+\[
+\begin{aligned}
+\atsign_{\mathcal U}\,t
+&=\atsign_{\varnothing,\mathcal A_{\mathcal U}^C}
+       \bigl(t[\overline{\atsign_C}]\bigr),\\
+\varphi\,\atsign_{\mathcal U}
+&\quad\Longleftrightarrow\quad
+\varphi[\overline{\atsign_C}]\,
+       \atsign_{\varnothing,\mathcal A_{\mathcal U}^C}.
+\end{aligned}
+\]
+Evaluating the inserted name for \(x\) yields
+\([(\atsign_i(x))_i]_{\mathcal U}=\atsign_{\mathcal U}(x)\);
+the two identities therefore follow from the term and formula
+substitution lemmas.
+
+\subsection{Occurrence maps and transferred truth labels}
+
+Fix the finite occurrence-substitution map
+\(\gamma:=\gamma_{M,\vec o}:D_{M,\vec n}\to C_{\vec\ell}\) of
+Section~\ref{occurrence-indexed-substitution}. Let
+\(e_i:C_{\vec\ell}\to\mathbf2\) label the formal arguments by
+their truth values in \(\mathcal A_i\) under \(\atsign_i\), and let
+\(d_i=e_i\circ\gamma\) label their occurrences.
+Define \(e_{\mathcal U}\) and \(d_{\mathcal U}\) by
+\[
+\begin{aligned}
+e_{\mathcal U}(c)=\top
+&\quad\Longleftrightarrow\quad
+\{i:e_i(c)=\top\}\in\mathcal U,\\
+d_{\mathcal U}(r)=\top
+&\quad\Longleftrightarrow\quad
+\{i:d_i(r)=\top\}\in\mathcal U.
+\end{aligned}
+\]
+For every \(r\), the two sets
+\(\{i:d_i(r)=\top\}\) and
+\(\{i:e_i(\gamma(r))=\top\}\) are equal. Hence
+\(d_{\mathcal U}=e_{\mathcal U}\circ\gamma\).
+When \(e_i(c)=\top\) means
+\(\psi_c\,\atsign_i\) for a fixed formula \(\psi_c\),
+\L{}o\'s's theorem identifies
+\(e_{\mathcal U}(c)=\top\) with
+\(\psi_c\,\atsign_{\mathcal U}\).
+Thus the occurrence map transports exactly the truth labels supplied
+by postfix \(\atsign\) in the ultraproduct. Evaluation of the fixed
+finite connective pattern then commutes with
+\(u_{\mathcal U}\).
+
+
+\Needspace{12\baselineskip}
+\section{Conclusion}\label{conclusion}
+
+The principal objects and maps that elementary notation can obscure are now
+separated by type:
+
+\[
+\begin{array}{rcl}
+\text{terms over }X &:& T_\Sigma X,\\
+\text{syntactic substitutions} &:& X\to T_\Sigma Y,\\
+\text{assignments} &:& X\to A,\\
+\text{term evaluation} &:& A^X\times T_\Sigma X\to A,\\
+\text{formulas over }X &:& \operatorname{Form}_{\mathcal L}(X),\\
+\text{satisfaction} &:&
+\operatorname{Form}_{\mathcal L}(X)\times A^X\to\mathbf2.
+\end{array}
+\]
+
+Categorically, substitution is composition in \(\mathbf{Kl}(T_\Sigma)\),
+evaluation is the action of an Eilenberg--Moore algebra, and the substitution
+lemma is their compatibility law. Language expansion turns assignments into
+ground-term substitutions, with the unit law ensuring that each name evaluates
+to the element it names. The \DP\ occurrence maps record generalized
+composition of formula patterns by tracking repeated argument occurrences
+through finite coproduct fibres and their ordinal encodings.
+
+The parallel $\atsign$-calculus writes the same maps as calculations:
+$\atsign\,t$ returns a term's value, \(\varphi\,\atsign\) records satisfaction,
+and the sliding identities calculate compatibility with substitution. The two
+presentations have complementary jobs: categorical maps expose types and compositional
+laws, while the $\atsign$-calculus supplies the working notation.
+
+The categorical organization is also functorial. Lawvere theories admit models
+in any category with finite products, and classifying toposes represent models
+of geometric theories by points or generalized points. Thus the set-based
+account is one instance of the construction.
+
+\clearpage
+\appendix
+\numberwithin{equation}{section}
+\section{Feferman's arithmetization conventions}\label{app:feferman}
+
+Arithmetization adds another distinction to those of the preceding sections:
+an expression, its numerical code, and an arithmetic term denoting that code
+have different types. Numeral substitution combines all three. The
+evaluation identity in Appendix~\ref{app:numeral-substitution} connects this
+construction with the prefix $\atsign$-calculus.
+
+In the formula displays of this appendix, $\varphi(v)$ designates a formula
+with the indicated free-variable slot, following the textbook convention
+described in Section~\ref{formulas-and-satisfaction}; $\varphi(\bn n)$
+denotes its numeral instance. Dotted occurrences inside quotation marks
+will be defined by an explicit translation into arithmetic terms.
+
+Feferman represents operations on formal syntax by terms and formulas
+of arithmetic. We explain the conventions in his \emph{Arithmetization
+of metamathematics in a general setting} (1960), especially \S4,
+pp.~57--58 \cite{F60}, and \emph{Transfinite recursive progressions of
+axiomatic theories} (1962), \S2(c), pp.~268--270 \cite{F62}.
+
+His notation identifies expressions with their G\"odel numbers and
+marks represented operations by dots. A dotted variable abbreviates
+the represented numeral constructor; combining it with substitution
+produces the code of a numeral instance. The exposition distinguishes
+expressions, their numerical codes, and the arithmetic terms denoting
+those codes. The explicit grammar and coding examples below support
+this reading of Feferman's notation. The final section explains its
+use in Di Paola and Montagna's parameterized consistency formulas.
+
+\subsection{Numbers, numerals, and the function \texorpdfstring{$\Num$}{Num}}\label{app:numerals}
+
+\subsubsection*{The arithmetic language}
+The first-order language of arithmetic used here has nonlogical signature
+\[
+ \LA=\{0,S,+,\cdot\},
+\]
+where $0$ is a constant symbol, $S$ is unary, and $+$ and $\cdot$
+are binary function symbols. Equality is a logical symbol. With variables
+$v_0,v_1,\ldots$, its terms $t$ and formulas $A$ are generated by
+\begin{align*}
+ t&::=v_i\mid0\mid S(t)\mid t+t\mid t\cdot t,\\
+ A&::=t=t\mid\neg A\mid A\to A\mid\forall v_i\,A.
+\end{align*}
+Parentheses specify the grouping of expressions. Other connectives and
+quantifiers are abbreviations in this syntax. The symbol $\cdot$ is
+multiplication; the dot above a variable has a different role.
+
+The corresponding standard structure is
+\[
+ \mathcal N=\langle\N,0,S^{\mathcal N},+^{\mathcal N},
+                         \cdot^{\mathcal N}\rangle,
+ \qquad S^{\mathcal N}(n)=n+1,
+\]
+with addition and multiplication of natural numbers. Thus the signature
+lists symbols and their arities, whereas the structure also specifies a
+domain and interpretations. Below, $\N$ also denotes this structure and
+its expansion by the specified primitive recursive functions.
+
+Fix a language $L^{*}$ extending $\LA$ by function symbols for the
+primitive recursive functions needed below. Fix an
+injective G\"odel coding $E\mapsto\code{E}$ of its finite expressions,
+with primitive recursive syntax predicates and constructors. Expressions
+are coded as raw syntax: distinct bound-variable names remain distinct,
+although Section~\ref{formulas-and-satisfaction} takes formulas modulo
+$\alpha$-equivalence. Provably equal terms and logically equivalent
+formulas also retain their distinct codes. All displayed formula abbreviations are
+expanded by fixed conventions before coding.
+
+\subsubsection*{Numerals and their codes}
+For $n\in\N$, its \emph{numeral} is the closed term defined by
+\[
+  \bn0\defeq 0,\qquad \bn{n+1}\defeq S(\bn n).
+\]
+Thus $\bn2$ is the term $S(S(0))$. Throughout this appendix, $\bn n$
+denotes this numeral, whereas the bar in
+Section~\ref{expansion-of-a-language-by-names-for-a-structure} denotes an
+adjoined constant symbol naming an element. No new constant symbols
+are needed for these numerals. Define the numerical function
+\begin{equation}\label{eq:num}
+  \boxed{\num(n)\defeq\code{\bn n}.}
+\end{equation}
+Its input is a number; its output is another number, namely a code.
+If $\scod(\code t)=\code{S(t)}$ for each term $t$, with
+$\scod(a)=\code0$ on non-term codes, then
+\begin{equation}\label{eq:num-recursion}
+  \num(0)=\code0,\qquad
+  \num(n+1)=\scod(\num(n)).
+\end{equation}
+These equations prove that $\num$ is primitive recursive. In particular,
+$\num(n+1)$ is obtained by coding an additional successor symbol; it is
+not defined as $\num(n)+1$.
+
+Write $\PA$ for a conservative definitional extension of PA containing
+the chosen primitive recursive function symbols and their defining
+equations. The symbol $\Num$ represents $\num$, and $\Sc$ represents
+$\scod$. Their equations include
+\[
+  \PA\vdash \Num(0)=\bn{\code0},\qquad
+  \PA\vdash \forall x\,\Num(Sx)=\Sc(\Num(x)).
+\]
+For every standard $n$,
+\begin{equation}\label{eq:num-evaluation}
+  \PA\vdash\Num(\bn n)=\bn{\num(n)}.
+\end{equation}
+Lower-case $\num$ denotes the numerical function in the metatheory;
+upper-case $\Num$ is the arithmetic function symbol. When this
+distinction is suppressed, both are often written $\Num$.
+
+The construction factors through the set of numeral expressions:
+\[
+\begin{tikzcd}[column sep=large,row sep=large]
+ \N \arrow[r,"n\mapsto\bn n"] \arrow[dr,"\num"'] &
+ \mathsf{Numerals}(L^{*}) \arrow[d,"\#"]\\
+ & \N.
+\end{tikzcd}
+\]
+
+\noindent The following expressions have different syntactic roles.
+\begin{center}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Expression & Meaning\\
+\midrule
+$n$ & A natural number in the metatheory.\\
+$\bn n$ & An arithmetic term denoting $n$.\\
+$\num(n)$ & The natural number $\code{\bn n}$.\\
+$\Num(x)$ & An arithmetic term with free variable $x$.\\
+$\Num(\bn n)$ & A closed arithmetic term denoting $\num(n)$.\\
+$\bn{\num(n)}$ & The numeral denoting $\num(n)$.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+For example, $\Num(\bn2)=\Num(S(S(0)))$ and
+$\bn{\num(2)}$ have the same value, but they are different terms and
+therefore have different G\"odel codes.
+
+Feferman's name for the numerical constructor is $\mathrm{nm}$.
+The dot convention for represented functions appears in
+\cite[\S4, p.~57]{F60}, with the numeral constructor on p.~58.
+The primitive recursive extensions are introduced in
+\cite[\S3, Definition~3.3 and Theorem~3.4, pp.~52--53]{F60}.
+In \cite[\S2(c), p.~269]{F62}, Feferman explicitly abbreviates the
+represented numeral constructor applied to $u$ by $\dot u$.
+In our notation,
+\begin{equation}\label{eq:dot}
+  \dot u\quad\text{abbreviates}\quad\Num(u).
+\end{equation}
+This is a special case of the general dot convention, not a separate
+operation on variables. Feferman's description of the output as the
+$(u+1)$-st numeral counts $\bn0$ as the first numeral.
+
+\subsubsection*{Concrete values of \texorpdfstring{$\#$}{the coding map}}
+The number $\code E$ depends on the chosen coding. For explicit numerical
+examples, use the following coding of syntax trees. These numerical
+assignments are chosen here; they are not Feferman's particular numbering.
+The remaining definitions and results apply to any coding with the
+primitive recursive operations already specified.
+
+Define the pairing function and the constructor-code function by
+\[
+ \pi(a,b)\defeq\frac{(a+b)(a+b+1)}{2}+b,
+ \qquad c(j,a)\defeq1+\pi(j,a).
+\]
+The first argument $j$ of $c$ records which syntactic constructor is used.
+Code terms and formulas recursively as follows:
+\begin{align*}
+ \code0&=c(0,0), & \code{v_i}&=c(1,i),\\
+ \code{S(t)}&=\ctag2{\code t},
+   &\code{t+u}&=\ctag3{\pair{\code t}{\code u}},\\
+ \code{t\cdot u}&=\ctag4{\pair{\code t}{\code u}},
+   &\code{t=u}&=\ctag5{\pair{\code t}{\code u}},\\
+ \code{\neg A}&=\ctag6{\code A},
+   &\code{A\to B}&=\ctag7{\pair{\code A}{\code B}},\\
+ \code{\forall v_i\,A}&=\ctag8{\pair i{\code A}}.
+\end{align*}
+Injectivity follows by recovering the constructor and its arguments from
+the pairing. Parentheses determine the syntax tree and are not separately
+coded. The coding extends to each added function symbol $f_j$ of arity $r$
+by the rule
+\[
+ \code{f_j(t_1,\ldots,t_r)}
+   =c\bigl(9+j,\sigma(\code{t_1},\ldots,\code{t_r})\bigr),
+\]
+where the finite-sequence code satisfies
+$\sigma()=0$ and
+$\sigma(a_1,\ldots,a_r)=1+\pi(a_1,\sigma(a_2,\ldots,a_r))$ for $r>0$.
+The added symbols are indexed with primitive recursive arity lookup.
+
+For this coding the following are actual natural-number values of $\#$:
+\begin{center}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Expression $E$ & $\code E$\\
+\midrule
+$0$ & $1$\\
+$v_0$ & $2$\\
+$S(0)$ & $8$\\
+$S(S(0))$ & $64$\\
+$0+0$ & $33$\\
+$0=0$ & $50$\\
+\bottomrule
+\end{tabular}
+\end{center}
+For example,
+\[
+ \code{S(0)}=1+\pi(2,1)=8,\qquad
+ \code{0=0}=1+\pi\bigl(5,\pi(1,1)\bigr)=50.
+\]
+Consequently $\num(0)=1$, $\num(1)=8$, and $\num(2)=64$;
+in particular, $\PA\vdash\Num(\bn2)=\bn{64}$.
+The terms $0$ and $0+0$ both denote zero, but their codes are $1$ and $33$.
+
+\subsection{Quotation and substitution}
+
+For a fixed expression $E$, its \emph{ordinary G\"odel quotation} is
+the numeral
+\begin{equation}\label{eq:quote}
+  \quo E\defeq\bn{\code E}.
+\end{equation}
+It is closed even when $E$ is open. Thus $x$ is not free in
+$\quo{x=x}$.
+For the concrete coding above,
+\[
+ \quo{S(0)}=\bn8,\qquad
+ \quo{0=0}=\bn{50},\qquad
+ \quo{v_0=0}=\bn{86}.
+\]
+The number $86$ codes the open formula $v_0=0$; its quotation is the
+closed numeral $\bn{86}$.
+
+For each $k\geq1$, let
+\[
+ \sbop_k(a;v_1,\ldots,v_k;b_1,\ldots,b_k)
+\]
+be the primitive recursive function that simultaneously substitutes
+the terms with codes $b_i$ for the free occurrences of the distinct
+variables with codes $v_i$ in the expression with code $a$.
+Fix a deterministic procedure for renaming bound variables when needed
+to avoid capture; preserve the existing names when no renaming is
+needed. Set the result to $0$ on invalid inputs. Let $\Sb_k$ be its
+representing function symbol in $L^{*}$, and write $\Sb$ for $\Sb_1$.
+The semicolons separate blocks of arguments; they are not additional
+object-language operations. Feferman's corresponding substitution
+operations are $\mathrm{Sb}$ and simultaneous substitution
+$\mathrm{SSb}$ \cite[\S2(b), pp.~42--43; \S4, p.~57]{F60}.
+
+For a fixed expression $E$ and a designated variable $v$, define
+\begin{equation}\label{eq:q}
+ q_{E;v}(t)\defeq
+ \Sb\bigl(\quo E;\quo v;\Num(t)\bigr).
+\end{equation}
+This is an arithmetic term. Its value when $t$ has value $n$ is
+\[
+ \code{E[\bn n/v]},
+\]
+where the bracket denotes replacement of the free occurrences of $v$.
+The inserted expression is a numeral, so it has no variables that could
+be captured. When $E=\varphi(v)$ and $v$ is understood, write
+$q_\varphi(t)$ for $q_{\varphi;v}(t)$.
+
+The conventional notation
+\begin{equation}\label{eq:dotted-quotation}
+ \quo{\varphi(\dot x)}\defeq q_\varphi(x)
+   =\Sb\bigl(\quo{\varphi(v)};\quo v;\Num(x)\bigr)
+\end{equation}
+therefore denotes the code of an instance, as a function of $x$.
+In contrast, $\quo{\varphi(v)}$ is the fixed numeral for the code of
+the open formula. Feferman's substitution abbreviation on p.~269 of
+\cite{F62} is precisely this numeral-substitution construction,
+in his convention identifying expressions with their codes.
+
+\subsection{Making numeral substitution explicit}
+
+To make the substitution conventions explicit, the following auxiliary
+grammar designates the occurrences to be filled with numerals. Its
+translation uses Feferman's represented numeral constructor and
+substitution operations. The occurrence syntax is supplied for this
+exposition: it distinguishes ordinary variables in the quoted expression
+from the arithmetic parameters that determine the inserted numerals.
+
+\subsubsection*{Templates and arithmetic expressions}
+Let $v$ range over object variables, and let
+$\h_1,\h_2,\ldots$ be distinct \emph{hole symbols}, which are not
+variables and cannot be bound. A term template $U$ and formula template
+$A$ have grammar
+\begin{align*}
+ U&::=v\mid0\mid S(U)\mid U+U\mid U\cdot U
+        \mid f(U_1,\ldots,U_r)\mid\h_i,\\
+ A&::=U=U\mid\neg A\mid A\to A\mid\forall v\,A.
+\end{align*}
+Here $f$ ranges over the chosen function symbols of $L^{*}$, with
+their assigned arities. A template $C$ is either kind. It contains no
+quotation constructor. Connectives such as $\land,\lor,\exists$, and
+formula notations such as $\Prov_T$ and $\Con_\alpha$, are fixed
+abbreviations, expanded before a template is coded.
+
+Surface arithmetic terms $t$ and formulas $B$ have grammar
+\begin{align*}
+ t&::=x\mid0\mid S(t)\mid t+t\mid t\cdot t
+       \mid f(t_1,\ldots,t_r)\mid\Q(C;t_1,\ldots,t_k),\\
+ B&::=t=t\mid\neg B\mid B\to B\mid\forall x\,B.
+\end{align*}
+The distinct holes occurring in $C$ must be exactly
+$\h_1,\ldots,\h_k$; a hole may occur more than once. When $k=0$,
+write $\Q(C;)$.
+
+\subsubsection*{Translation into the arithmetic language}
+Write $t^{\flat}$ for the translation of a surface term into $L^{*}$.
+Translate variables and arithmetic constructors component by component.
+For $\Q$, choose distinct variables $w_1,\ldots,w_k$ that occur nowhere
+in $C$, by a fixed rule. Let $C^{\mathbf w}$ replace each hole
+$\h_i$ by $w_i$. Set
+\begin{align}
+ \flatof{\Q(C;)}&\defeq\quo C,\label{eq:grammar-zero}\\
+ \flatof{\Q(C;t_1,\ldots,t_k)}
+ &\defeq\Sb_k\bigl(\quo{C^{\mathbf w}};
+       \quo{w_1},\ldots,\quo{w_k};
+       \Num(t_1^{\flat}),\ldots,\Num(t_k^{\flat})\bigr)
+       \quad(k>0).\label{eq:grammar}
+\end{align}
+Formula translation is likewise componentwise. Equations
+\eqref{eq:grammar-zero}--\eqref{eq:grammar} eliminate quotation and holes;
+the result is an ordinary arithmetic expression.
+
+The free-variable rule is
+\begin{equation}\label{eq:fv}
+ \FV\bigl(\flatof{\Q(C;t_1,\ldots,t_k)}\bigr)
+   =\bigcup_{i=1}^{k}\FV(t_i^{\flat}).
+\end{equation}
+Ordinary variables in $C$ occur inside fixed code numerals and contribute
+no free variables to the translated term. A quantifier outside $\Q$
+can bind variables in its arguments. A quantifier inside $C$ binds
+only the ordinary object-variable occurrences in its own scope.
+
+Dotted display notation abbreviates this constructor: put $\dot t_i$
+at the occurrences of $\h_i$, and enclose the resulting display in
+G\"odel corners. The dot records \emph{numeral insertion} at those
+occurrences. Thus a generalized dotted term uses $\Num(t_i^{\flat})$,
+not the code of the term $t_i$ itself.
+
+\begin{example}[Ordinary occurrences remain quoted]\label{ex:mixed}
+The display $\quo{x=\dot x}$ means $\Q(x=\h_1;x)$. With a fresh $w$,
+its translation is
+\[
+  \Sb(\quo{x=w};\quo w;\Num(x)).
+\]
+At $x=n$, its value is $\code{x=\bn n}$, an open-formula code.
+Replacing the dot by the ordinary variable $x$ and then substituting
+for every free $x$ in $x=x$ would instead produce
+$\code{\bn n=\bn n}$. Fresh placeholders prevent this error.
+\end{example}
+
+\begin{example}[A hole under a quantifier]\label{ex:bound}
+The display $\quo{\forall x\,(x=\dot x)}$ means
+$\Q(\forall x\,(x=\h_1);x)$. It translates as
+\[
+  \Sb(\quo{\forall x\,(x=w)};\quo w;\Num(x)),
+\]
+and has value $\code{\forall x\,(x=\bn n)}$ at $x=n$.
+The inner $\forall x$ does not bind the parameter supplied to the
+hole. Consequently this grammar needs no prohibition on a dotted $x$
+under an inner $\forall x$. The explicit $\Q$ form resolves the two
+roles of the same printed letter.
+\end{example}
+
+\begin{example}[Repeated holes and compound parameters]
+The term $\Q(\h_1=\h_1;x)$ has value
+$\code{\bn n=\bn n}$ at $x=n$. The term
+$\Q(\h_1=\h_2;x,Sx)$ has value
+$\code{\bn n=\bn{n+1}}$. For a fixed $\varphi(v)$,
+$\quo{\varphi(\dot{(x+y)})}$ denotes $q_\varphi(x+y)$: at
+$x=n,y=m$ it codes $\varphi(\bn{n+m})$, not
+$\varphi(\bn n+\bn m)$.
+\end{example}
+
+\subsection{The substitution lemma}\label{app:numeral-substitution}
+
+\begin{proposition}[Numeral evaluation]\label{prop:evaluation}
+Let the holes of $C$ be $\h_1,\ldots,\h_k$.
+For each tuple of standard natural numbers $n_1,\ldots,n_k$,
+\begin{equation}\label{eq:lemma}
+ \PA\vdash
+ \flatof{\Q(C;\bn{n_1},\ldots,\bn{n_k})}
+   =\quo{C[\bn{n_1}/\h_1,\ldots,\bn{n_k}/\h_k]}.
+\end{equation}
+The right side is an ordinary quotation, hence a numeral.
+\end{proposition}
+
+\begin{proof}
+For $k=0$, the assertion is the defining identity
+\eqref{eq:grammar-zero}. For $k>0$, replace each $\Num(\bn{n_i})$ by $\bn{\num(n_i)}$ using
+\eqref{eq:num-evaluation}. The remaining closed $\Sb_k$ term
+computes the code obtained by substituting $\bn{n_i}$ for the fresh
+$w_i$. Those variables occur exactly where the holes occurred and
+are not bound. The result is exactly the expression on the right.
+The defining equations prove this finite computation in $\PA$.
+\end{proof}
+
+In particular, when $q(x)=\flatof{\Q(C;x)}$,
+\[
+  \PA\vdash q(x)[\bn n/x]=\quo{C[\bn n/\h_1]}.
+\]
+The substitution on the left is substitution in the translated
+arithmetic term. Undotted variable occurrences inside $C$ remain quoted.
+More generally, if a valuation $s$ assigns $t_i^{\flat}$ the value $n_i$,
+then
+\[
+ \llbracket\flatof{\Q(C;t_1,\ldots,t_k)}\rrbracket^{\N}_s
+   =\code{C[\bn{n_1}/\h_1,\ldots,\bn{n_k}/\h_k]}.
+\]
+With $\atsign=s$, the prefix evaluation convention of
+Section~\ref{at-sign-pairing-calculus} writes the same identity as
+\[
+ \atsign\,\flatof{\Q(C;t_1,\ldots,t_k)}
+ =\code{C[\overline{\atsign\,t_1^{\flat}}/\h_1,\ldots,
+                \overline{\atsign\,t_k^{\flat}}/\h_k]}.
+\]
+Here each $\atsign\,t_i^{\flat}$ is a number; its bar constructs a
+numeral, which fills a hole before the resulting expression is coded.
+These are semantic identities; \eqref{eq:lemma} is the separate
+provability assertion for each fixed tuple of numerals. The use of
+$\PA$ specifies the language in which the displayed function terms
+exist. Their occurrences can be eliminated to obtain statements in PA.
+
+\subsection{Occurrence profiles and arithmetized substitution}
+\label{app:occurrence-feferman}
+
+The finite occurrence construction of
+Section~\ref{occurrence-indexed-substitution} applies to the term holes of
+an arithmetic template. Each hole receives a term. The occurrence map
+records which argument fills each slot, while the surrounding syntax
+specifies the constructors of the resulting expression.
+
+Let $C$ be a term or formula template with distinct holes
+$\h_1,\ldots,\h_k$ and $m$ hole occurrences. Number the occurrences from
+left to right and define
+\[
+ o_C:\finord m\longrightarrow\finord k,
+ \qquad o_C(r)=i
+ \quad\Longleftrightarrow\quad
+ \text{the $r$-th hole occurrence is $\h_i$}.
+\]
+Let $C_{\mathrm{lin}}$ be the template obtained by replacing the $r$-th
+hole occurrence by $\h_r$, for every $r\in\finord m$. Thus each hole of
+$C_{\mathrm{lin}}$ occurs exactly once. This replacement is performed on
+the occurrence slots of $C$ in one step. It leaves every ordinary variable,
+function symbol, connective, and quantifier unchanged.
+
+For any set $B$, precomposition with $o_C$ defines
+\[
+ o_C^*:B^{\finord k}\longrightarrow B^{\finord m},
+ \qquad
+ o_C^*(b_1,\ldots,b_k)
+   =(b_{o_C(1)},\ldots,b_{o_C(m)}).
+\]
+Let $K\subseteq\N$ be the set of codes of closed $L^{*}$-terms. Choose
+the fresh variables $w_1,\ldots,w_k$ used in the translation of $C$ and
+write $C^{\mathbf w}$ as in \eqref{eq:grammar}. Define
+\[
+ b_C:K^{\finord k}\longrightarrow\N,
+ \qquad
+ b_C(\vec a)=
+ \sbop_k\bigl(\code{C^{\mathbf w}};
+       \code{w_1},\ldots,\code{w_k};a_1,\ldots,a_k\bigr)
+ \quad(k>0).
+\]
+For $k=0$, the domain is a singleton and $b_C()=\code C$.
+Define $b_{C_{\mathrm{lin}}}$ in the same way, using fresh variables
+$z_1,\ldots,z_m$ for its holes. The variables in each list occur nowhere
+in the corresponding template.
+
+\begin{proposition}[Occurrence factorization]\label{prop:occurrence-feferman}
+For every $\vec a\in K^{\finord k}$,
+\begin{equation}\label{eq:occurrence-feferman}
+ b_C(\vec a)=b_{C_{\mathrm{lin}}}(o_C^*\vec a).
+\end{equation}
+Consequently, the following diagram commutes, where the upper vertical
+maps apply $\num$ coordinatewise:
+\[
+\begin{tikzcd}[column sep=huge,row sep=large]
+ \N^{\finord k} \arrow[r,"o_C^*"]
+   \arrow[d,"\num^{\finord k}"'] &
+ \N^{\finord m} \arrow[d,"\num^{\finord m}"]\\
+ K^{\finord k} \arrow[r,"o_C^*"] \arrow[d,"b_C"'] &
+ K^{\finord m} \arrow[d,"b_{C_{\mathrm{lin}}}"]\\
+ \N \arrow[r,equal] & \N.
+\end{tikzcd}
+\]
+\end{proposition}
+
+\begin{proof}
+Write $a_i=\code{u_i}$ with $u_i$ a closed term. Substitution into
+$C^{\mathbf w}$ inserts $u_{o_C(r)}$ at the $r$-th original hole
+occurrence. Substitution into $C_{\mathrm{lin}}^{\mathbf z}$ with the
+argument list $o_C^*(u_1,\ldots,u_k)$ inserts the same term at the same
+position. Structural recursion on $C$ therefore yields the raw-syntax
+identity
+\[
+ C^{\mathbf w}[u_1/w_1,\ldots,u_k/w_k]
+ =C_{\mathrm{lin}}^{\mathbf z}
+     [u_{o_C(1)}/z_1,\ldots,u_{o_C(m)}/z_m].
+\]
+All inserted terms are closed, so no variable can be captured and the
+specified substitution procedure preserves the bound-variable names.
+Coding this identity proves \eqref{eq:occurrence-feferman}. The upper
+square commutes coordinatewise: both paths send $\vec n$ to
+$(\num(n_{o_C(r)}))_{r\in\finord m}$. When $k=0$, also $m=0$,
+and both lower maps have the constant value $\code C$.
+\end{proof}
+
+For surface arithmetic terms $t_1,\ldots,t_k$ and a current assignment
+$\atsign$ in the standard arithmetic structure, the diagram and the
+translation \eqref{eq:grammar} yield
+\begin{equation}\label{eq:occurrence-feferman-at}
+ \atsign\,\flatof{\Q(C;t_1,\ldots,t_k)}
+ =\atsign\,\flatof{
+       \Q(C_{\mathrm{lin}};t_{o_C(1)},\ldots,t_{o_C(m)})}.
+\end{equation}
+For $m>0$, the arithmetic term evaluated on the right expands to
+\[
+ \Sb_m\bigl(\quo{C_{\mathrm{lin}}^{\mathbf z}};
+   \quo{z_1},\ldots,\quo{z_m};
+   \Num(t_{o_C(1)}^{\flat}),\ldots,
+   \Num(t_{o_C(m)}^{\flat})\bigr).
+\]
+Thus the occurrence map duplicates and reorders the represented numeral
+arguments of Feferman's substitution operation. For each fixed tuple of
+standard numerals, the equality between the two closed translated terms
+is provable in $\PA$ by their defining computations, as in
+Proposition~\ref{prop:evaluation}.
+
+\begin{example}[A repeated numeral argument]
+For $C=\h_1+\h_1$, the profile is $o_C=(1,1)$ and
+$C_{\mathrm{lin}}=\h_1+\h_2$. The upper horizontal map in the diagram
+is the diagonal $n\mapsto(n,n)$. In the prefix notation,
+\[
+ \atsign\,\flatof{\Q(\h_1+\h_1;x)}
+   =\code{\overline{\atsign\,x}+\overline{\atsign\,x}}.
+\]
+At $\atsign\,x=0$, the value is $\code{0+0}=33$ for the coding of
+Appendix~\ref{app:numerals}, whereas $\num(0+0)=\code0=1$.
+The code retains the addition symbol. The template $\h_1\cdot\h_1$
+has the same occurrence profile and a different constructor, so its
+substitution codes are different. The profile and the preserved syntax
+together determine the operation.
+\end{example}
+
+\subsubsection*{Composition of templates}
+For each $i\in\finord k$, let $D_i$ be a term template on the holes
+$\mathsf g_{i,1},\ldots,\mathsf g_{i,\ell_i}$, with no ordinary
+variables. Assume these hole families are pairwise disjoint. Let $D_i$
+have $n_i$ hole occurrences and profile
+$o_i:\finord{n_i}\to\finord{\ell_i}$.
+Replace each $\h_i$ in $C$ by $D_i$ and denote the resulting template
+by $C[\vec D]$. Index its holes in the block order of
+Section~\ref{occurrence-indexed-substitution}.
+
+Each hole occurrence in $C[\vec D]$ has coordinates $(r,t)$, where $r$
+selects a hole occurrence of $C$ and $t$ selects an occurrence in the
+inserted copy of $D_{o_C(r)}$. Its hole label is therefore recorded by
+exactly the fibrewise map of that section:
+\[
+\begin{aligned}
+ D_{C,\vec n}
+   &=\bigoplus_{r=1}^{m}\finord{n_{o_C(r)}},
+ &C_{\vec\ell}&=\bigoplus_{i=1}^{k}\finord{\ell_i},\\
+ \gamma_{C,\vec o}:D_{C,\vec n}&\longrightarrow C_{\vec\ell},
+ &\gamma_{C,\vec o}(r,t)&=
+       \bigl(o_C(r),o_{o_C(r)}(t)\bigr).
+\end{aligned}
+\]
+An assignment of closed-term codes $a:C_{\vec\ell}\to K$ pulls back
+along $\gamma_{C,\vec o}$ to the occurrence labels
+\[
+ (a\circ\gamma_{C,\vec o})(r,t)
+   =a\bigl(o_C(r),o_{o_C(r)}(t)\bigr).
+\]
+The ordinal encodings of Section~\ref{occurrence-indexed-substitution}
+transport this map to $\delta_{C,\vec o}$.
+
+Let $a_i=(a(i,1),\ldots,a(i,\ell_i))$. Filling $D_i$ with closed
+terms produces a closed term, so $b_{D_i}(a_i)\in K$. The substitution
+maps on codes form the typed commutative square
+\[
+\begin{tikzcd}[column sep=12em,row sep=large]
+ K^{C_{\vec\ell}}
+   \arrow[r,"{a\mapsto(b_{D_i}(a_i))_{i\in\finord k}}"]
+   \arrow[d,"b_{C[\vec D]}"'] &
+ K^{\finord k} \arrow[d,"b_C"]\\
+ \N \arrow[r,equal] & \N.
+\end{tikzcd}
+\]
+Indeed, both paths code the expression obtained by filling every final
+hole of $C[\vec D]$ with the prescribed closed term. Filling the inner
+templates first and then inserting them in $C$ yields that same raw
+expression. No bound-variable renaming is required. Equivalently,
+\begin{equation}\label{eq:feferman-template-composition}
+ b_{C[\vec D]}(a)
+   =b_C\bigl(b_{D_1}(a_1),\ldots,b_{D_k}(a_k)\bigr).
+\end{equation}
+The map $\gamma_{C,\vec o}$ specifies the occurrence routing for this
+composition; the primitive recursive substitution functions compute its
+output code. Numeral insertion into the final holes is the specialization
+$a(i,s)=\num(n_{i,s})$.
+
+
+\subsection{Three provability assertions}
+
+Fix a recursively enumerable theory $T$ in $L^{*}$ whose nonlogical
+axioms are sentences, and fix an arithmetized proof predicate that
+allows open formulas as proof conclusions. Let $\Prov_T(a)$ assert
+that some finite $T$-proof has conclusion with code $a$. Its standard
+interpretation is the actual theoremhood relation of $T$.
+Fix $\varphi(v)$ with $v$ as its only free variable.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{@{}p{0.43\linewidth}X@{}}
+\toprule
+Closed arithmetic sentence & What its truth in $\N$ means\\
+\midrule
+$\Prov_T(\quo{\forall v\,\varphi(v)})$
+  & $T\vdash\forall v\,\varphi(v)$.\\
+$\Prov_T(\quo{\varphi(v)})$
+  & $T\vdash\varphi(v)$, with $v$ free in the conclusion.\\
+$\forall x\,\Prov_T(q_\varphi(x))$
+  & For every $n\in\N$, $T\vdash\varphi(\bn n)$.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The first two express equivalent theoremhood conditions: universal
+elimination proves one direction and generalization proves the other,
+because $v$ is not free in any axiom. This hypothesis is explicit in
+\cite[\S2(c), Proposition~2.1, p.~45]{F60}; see also
+\cite[\S2(b), p.~266]{F62}.
+
+The third concerns proofs of numeral instances. Precisely,
+\begin{equation}\label{eq:pointwise}
+ \N\models\forall x\,\Prov_T(q_\varphi(x))
+ \quad\Longleftrightarrow\quad
+ (\forall n\in\N)\;T\vdash\varphi(\bn n).
+\end{equation}
+This follows from the value of $q_\varphi(x)$ at $x=n$ and the
+correctness of the standard proof predicate. Proposition~\ref{prop:evaluation} also
+yields, for every fixed $n$,
+\[
+ \PA\vdash
+ \Prov_T(q_\varphi(\bn n))
+ \leftrightarrow \Prov_T(\quo{\varphi(\bn n)}).
+\]
+This last inference uses equality congruence in arithmetic. It is not
+a reflection principle.
+
+Equation~\eqref{eq:pointwise} does not say that $T$ proves the
+displayed universal provability sentence, nor that $T$ proves
+$\forall v\,\varphi(v)$. In particular, a family of proofs of
+numeral instances is not a proof with a free variable to which the
+generalization rule can be applied.
+
+For example, if $E_{e,f}(v)$ is a fixed formula expressing the equality
+under consideration, with $e,f$ fixed, the two relations can be defined by
+\begin{align*}
+ e\equiv_T f&\quad\Longleftrightarrow\quad
+       T\vdash\forall v\,E_{e,f}(v),\\
+ e\approx_T f&\quad\Longleftrightarrow\quad
+       (\forall n\in\N)\;T\vdash E_{e,f}(\bn n).
+\end{align*}
+The first row of the table expresses the former and the third row the
+latter, when interpreted in $\N$ with $\varphi=E_{e,f}$. The formula
+chosen for equality, especially for partial functions, remains part of
+these definitions.
+
+\subsection{Nesting: coding a term and coding its value}
+
+Quotation is applied to a fixed arithmetic expression after its inner
+abbreviations have been expanded. Consequently
+\begin{equation}\label{eq:nesting-closed}
+ \quo{\Prov_T\bigl(\quo{\varphi(\dot x)}\bigr)}
+   =\quo{\Prov_T(q_\varphi(x))}
+\end{equation}
+is a closed numeral: it codes an open formula. The free $x$ in the
+inner arithmetic term is part of the syntax coded by the outer quotation.
+
+Two different parameterized constructions are useful. Put
+\[
+ F(v)\defeq\Prov_T(q_\varphi(v)),\qquad
+ G(v)\defeq\Prov_T(v),\qquad m_n\defeq\code{\varphi(\bn n)}.
+\]
+The $q$ notation always designates substitution for the indicated free
+variable of the fixed, expanded formula. In particular,
+$q_\varphi(v)$ in the definition of $F$ is its explicit arithmetic term.
+Then
+\begin{align}
+ \bigl(q_F(x)\bigr)^{\N,x\mapsto n}
+     &=\code{\Prov_T(q_\varphi(\bn n))},
+       \label{eq:nest-one}\\
+ \bigl(q_G(q_\varphi(x))\bigr)^{\N,x\mapsto n}
+     &=\code{\Prov_T(\bn{m_n})}.
+       \label{eq:nest-two}
+\end{align}
+The first construction inserts
+$\bn n$ into the syntax of the computation $q_\varphi(v)$; the
+second inserts the numeral for that computation's \emph{value} into $G$.
+Explicitly, the term occurring inside the first coded formula is
+\[
+ q_\varphi(\bn n)
+   =\Sb\bigl(\quo{\varphi(v)};\quo v;\Num(\bn n)\bigr),
+\]
+for the designated variable $v$ of $\varphi$. It is not the numeral
+$\bn{m_n}$. These terms have different syntax. With the fixed proof
+predicate, whose argument occurs in its expansion, the two coded
+formulas also have different syntax and hence different codes.
+
+On the other hand, Proposition~\ref{prop:evaluation} yields
+\[
+ \PA\vdash q_\varphi(\bn n)=\bn{m_n},
+ \qquad
+ \PA\vdash
+ \Prov_T(q_\varphi(\bn n))\leftrightarrow\Prov_T(\bn{m_n}).
+\]
+Provable equality of terms licenses replacement in formulas; it does
+not identify the codes of the terms or of the resulting formulas.
+The same distinction already occurs between $\Num(\bn n)$ and
+$\bn{\num(n)}$ in Appendix~\ref{app:numerals}.
+
+For reading nested expressions, expand the numeral-constructor and
+substitution abbreviations before taking the outer code. The terms
+$q_F(x)$ and $q_G(q_\varphi(x))$ display the two constructions explicitly.
+A notation assigning quotation depths to repeated dots would require
+additional syntactic conventions.
+
+\subsection{Axiom parameters and consistency formulas}
+
+\subsubsection*{A formula and a function producing its code}
+An \emph{axiom formula} $\alpha(u)$, with
+$\FV(\alpha)\subseteq\{u\}$, defines a set of axiom codes by
+\[
+ A_\alpha\defeq\{a\in\N:\N\models\alpha(\bn a)\}.
+\]
+Assume it selects only codes of sentences. Fix a proof calculus and
+an arithmetical formula $\Prf_\alpha(a,p)$ saying that $p$ codes a
+finite derivation with conclusion code $a$, whose nonlogical axioms
+satisfy $\alpha$. Choose this formula by a fixed primitive recursive
+construction from the syntax of $\alpha$. Define
+\begin{equation}\label{eq:consistency}
+ \Prov_\alpha(a)\defeq\exists p\,\Prf_\alpha(a,p),\qquad
+ \Con_\alpha\defeq\neg\Prov_\alpha(\quo\bot),
+\end{equation}
+where $\bot$ is the fixed logical contradiction
+$(0=0)\land\neg(0=0)$. This choice also works for fragments not
+containing arithmetic axioms. Feferman's formulation excludes a
+formula and its negation both being provable; it is equivalent to
+\eqref{eq:consistency} for this classical proof calculus
+\cite[\S2(c), p.~269]{F62}.
+
+The formula $\Con_\alpha$ is distinct from the primitive recursive
+function taking $\code\alpha$ to $\code{\Con_\alpha}$. Relative to
+the fixed construction in \eqref{eq:consistency}, denote that numerical
+function by $\mathrm{con}^{*}$ and its represented function symbol by
+$\Con^{*}$. Thus
+\begin{equation}\label{eq:con-star}
+ \mathrm{con}^{*}(\code\alpha)=\code{\Con_\alpha},
+ \qquad
+ \PA\vdash\Con^{*}(\quo\alpha)=\quo{\Con_\alpha}.
+\end{equation}
+Set the numerical function to $0$ on inputs outside its prescribed
+syntactic domain. Feferman makes exactly the distinction between
+consistency formulas and represented code-producing functions on
+p.~269 of \cite{F62}. Literal output codes depend on the selected
+definition of the consistency formula.
+
+\subsubsection*{Adding a numeral instance as an axiom}
+Fix a formula $\varphi(v)$ with no free variables other than $v$,
+and define
+\begin{equation}\label{eq:beta}
+ \beta(z;u)\defeq\alpha(u)\lor u=q_\varphi(z).
+\end{equation}
+Choose $z$ distinct from $u$. Here $z$ is a parameter and $u$ is
+the variable for axiom codes.
+For each $n\in\N$, $\beta(\bn n;u)$ defines the axiom set
+\[
+  A_\alpha\cup\{\code{\varphi(\bn n)}\}.
+\]
+The parameterized proof and consistency formulas are formed while
+leaving $z$ free; auxiliary proof variables are chosen fresh.
+We write the latter as $\Con_{\beta(z;\cdot)}$.
+This is a formula with parameter $z$, not a term. The construction is
+the parameter convention of \cite[\S2(c), p.~270]{F62}.
+
+One may abbreviate it by $\Con_{\alpha+\varphi(\dot z)}$, provided
+that the subscript is defined by \eqref{eq:beta}. The plus sign then
+denotes adjoining an axiom through its axiom formula. It does not
+assert that $\alpha+\varphi(\dot z)$ is itself an arithmetic term.
+The arithmetic term selecting the added axiom is $q_\varphi(z)$;
+a represented constructor such as $\Con^{*}$ is needed to compute
+the code of a consistency formula.
+
+\subsubsection*{The Di Paola--Montagna instance}
+In the Di Paola--Montagna setting, $T$ is a consistent, recursively
+enumerable extension of PA. Their characterization on p.~648 further
+assumes that $T$ is reflexive and $\alpha$ is an RE-formula binumerating
+its axioms in Robinson arithmetic. Let $\alpha$ be this axiom
+formula, and choose the variables $z,x,u$ pairwise distinct. Define the bounded axiom formula
+\begin{equation}\label{eq:restriction}
+ (\alpha\upharpoonright z)(u)\defeq\alpha(u)\land u\leq z.
+\end{equation}
+Fix an index $e$ for a unary partial recursive function and a primitive
+recursive computation predicate $\mathcal T(e,v,y)$ for which
+$\varphi_e(v)$ is defined exactly when some $y$ satisfies
+$\mathcal T(e,v,y)$. Let
+\begin{align}
+ \theta_e(v)&\defeq\exists y\,\mathcal T(\bn e,v,y),
+                   \label{eq:theta}\\
+ q_{\theta_e}(x)&\defeq
+  \Sb\bigl(\quo{\theta_e(v)};\quo v;\Num(x)\bigr),
+                   \label{eq:qtheta}\\
+ \beta_e(z,x;u)&\defeq
+    \bigl(\alpha(u)\land u\leq z\bigr)\lor u=q_{\theta_e}(x).
+                   \label{eq:beta-e}
+\end{align}
+Thus $\theta_e(v)$ is the formula abbreviated by
+$\varphi_e(v)\downarrow$ \cite[p.~645]{DPM91}. The dot in the added-axiom notation
+specifies substitution of the numeral for $x$ into this fixed formula.
+
+With the parameter arguments ordered as in
+\eqref{eq:beta-e}, Di Paola and Montagna's abbreviation is
+\begin{equation}\label{eq:dpm}
+ \Con_{\alpha\upharpoonright\bn n+\varphi_e(\dot x)\downarrow}
+   \defeq\Con_{\beta_e(\bn n,x;\cdot)}.
+\end{equation}
+The restriction uses $u\leq z$, including the endpoint. The bounded
+axiom numeration and the consistency abbreviation occur on p.~646 of
+\cite{DPM91}. Their condition~(ii), p.~648, has the quantifier pattern
+\begin{equation}\label{eq:dpm-ii}
+ (\forall n\in\N)\qquad
+ T\vdash\forall x\,
+   \Con_{\alpha\upharpoonright\bn n+\varphi_e(\dot x)\downarrow}.
+\end{equation}
+The quantification over $n$ is external: a separate theorem is asserted
+for each standard finite bound. The quantifier $\forall x$ is inside
+each theorem. For each fixed $n$, the formula concerns consistency of
+the bounded fragment together with one convergence instance, as that
+instance varies with $x$.
+
+{\footnotesize
+\begin{thebibliography}{99}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+
+\bibitem{DPcoherence}
+Kosta Do\v{s}en and Zoran Petri\'{c},
+\emph{Proof-Theoretical Coherence}, King's College Publications,
+London, 2004.
+\href{https://www.mi.sanu.ac.rs/novi_sajt/biography/kosta/coh.pdf}
+{Revised version, September 2007}.
+
+\bibitem{MacLane}
+Saunders Mac Lane,
+\emph{Categories for the Working Mathematician}, second edition,
+Graduate Texts in Mathematics 5, Springer, 1998.
+
+\bibitem{Lawvere1963}
+F.~William Lawvere,
+``Functorial semantics of algebraic theories,''
+\emph{Proceedings of the National Academy of Sciences of the United States of
+America} \textbf{50} (1963), 869--872.
+\href{https://doi.org/10.1073/pnas.50.5.869}{doi:10.1073/pnas.50.5.869}.
+
+\bibitem{CaramelloClassifying}
+Olivia Caramello,
+\emph{Topos Theory: Lectures 21 and 22---Classifying Toposes}.
+\href{https://www.oliviacaramello.com/Teaching/CambridgeToposTheoryCourseLectures21and22.pdf}{Lecture notes}.
+
+\bibitem{Manuell2022}
+Graham Manuell,
+``The spectrum of a localic semiring,''
+\emph{Mathematical Proceedings of the Cambridge Philosophical Society}
+\textbf{173} (2022), 647--668.
+\href{https://doi.org/10.1017/S0305004122000068}{doi:10.1017/S0305004122000068}.
+
+\bibitem{StacksPoints}
+The Stacks Project Authors,
+``Points of schemes,'' \emph{The Stacks Project}.
+\href{https://stacks.math.columbia.edu/tag/01J5}{Tag 01J5}.
+
+\bibitem{LurieUltraproducts}
+Jacob Lurie,
+\emph{Lecture 20X: Ultraproducts}, March 31, 2018.
+\href{https://www.math.ias.edu/~lurie/278xnotes/Lecture20X-Ultraproducts.pdf}
+{Lecture notes}.
+
+\bibitem{HaineCondensedPoints}
+Peter J. Haine,
+\emph{Classifying anima of condensed \(\infty\)-categories of points},
+\href{https://arxiv.org/abs/2602.21330}{arXiv:2602.21330}, 2026.
+
+\bibitem{ScholzeCondensed}
+Peter Scholze,
+\emph{Lectures on Condensed Mathematics},
+\href{https://arxiv.org/abs/2605.03658}{arXiv:2605.03658}, 2026.
+Updated version of the 2019 lectures, presenting joint work with
+Dustin Clausen.
+
+\bibitem{F60}
+Solomon Feferman.
+\emph{Arithmetization of metamathematics in a general setting}.
+Fundamenta Mathematicae \textbf{49} (1960), 35--92.
+\href{https://doi.org/10.4064/fm-49-1-35-92}{doi:10.4064/fm-49-1-35-92}.
+
+\bibitem{F62}
+Solomon Feferman.
+\emph{Transfinite recursive progressions of axiomatic theories}.
+The Journal of Symbolic Logic \textbf{27}, no.~3 (1962), 259--316.
+\href{https://doi.org/10.2307/2964649}{doi:10.2307/2964649}.
+
+\bibitem{DPM91}
+Robert A. Di Paola and Franco Montagna.
+\emph{Some properties of the syntactic $p$-recursion categories generated
+by consistent, recursively enumerable extensions of Peano arithmetic}.
+The Journal of Symbolic Logic \textbf{56}, no.~2 (1991), 643--660.
+\href{https://doi.org/10.2307/2274707}{doi:10.2307/2274707}.
+\end{thebibliography}
+}
+
+\end{document}
