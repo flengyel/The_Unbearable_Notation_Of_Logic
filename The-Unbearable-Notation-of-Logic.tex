@@ -239,9 +239,7 @@ X \arrow[r,"\eta_X^T"] \arrow[dr,"\eta_X^S"'] &
 T X \arrow[d,"j_X"] \\
 & S X
 \end{tikzcd}
-\]
-
-\[
+\qquad
 \begin{tikzcd}[row sep=large,column sep=large]
 T^2X \arrow[r,"j_{T X}"] \arrow[d,"\mu_X^T"'] &
 S T X \arrow[r,"S(j_X)"] & S^2X \arrow[d,"\mu_X^S"] \\
@@ -2653,7 +2651,7 @@ multiplication; the dot above a variable has a different role.
 
 The corresponding standard structure is
 \[
- \mathcal N=\langle\N,0,S^{\mathcal N},+^{\mathcal N},
+ \mathcal N=\langle\N,0^{\mathcal N},S^{\mathcal N},+^{\mathcal N},
                          \cdot^{\mathcal N}\rangle,
  \qquad S^{\mathcal N}(n)=n+1,
 \]
@@ -3404,52 +3402,48 @@ The arithmetic term selecting the added axiom is $q_\varphi(z)$;
 a represented constructor such as $\Con^{*}$ is needed to compute
 the code of a consistency formula.
 
-\subsubsection*{The Di Paola--Montagna instance}
-In the Di Paola--Montagna setting, $T$ is a consistent, recursively
-enumerable extension of PA. Their characterization on p.~648 further
-assumes that $T$ is reflexive and $\alpha$ is an RE-formula binumerating
-its axioms in Robinson arithmetic. Let $\alpha$ be this axiom
-formula, and choose the variables $z,x,u$ pairwise distinct. Define the bounded axiom formula
+\subsubsection*{Adding a convergence sentence}
+Di Paola and Montagna apply the preceding construction to a finite
+axiom set together with a single sentence asserting that a program
+halts \cite[pp.~645--646]{DPM91}. Let $\alpha(u)$ select the axiom
+codes of an arithmetical theory. Fix $n\in\N$ and choose $u,z,x$
+pairwise distinct.
+The bounded axiom formula
 \begin{equation}\label{eq:restriction}
- (\alpha\upharpoonright z)(u)\defeq\alpha(u)\land u\leq z.
+ (\alpha\upharpoonright z)(u)\defeq\alpha(u)\land u\leq z
 \end{equation}
-Fix an index $e$ for a unary partial recursive function and a primitive
-recursive computation predicate $\mathcal T(e,v,y)$ for which
-$\varphi_e(v)$ is defined exactly when some $y$ satisfies
-$\mathcal T(e,v,y)$. Let
-\begin{align}
- \theta_e(v)&\defeq\exists y\,\mathcal T(\bn e,v,y),
-                   \label{eq:theta}\\
- q_{\theta_e}(x)&\defeq
-  \Sb\bigl(\quo{\theta_e(v)};\quo v;\Num(x)\bigr),
-                   \label{eq:qtheta}\\
- \beta_e(z,x;u)&\defeq
-    \bigl(\alpha(u)\land u\leq z\bigr)\lor u=q_{\theta_e}(x).
-                   \label{eq:beta-e}
-\end{align}
-Thus $\theta_e(v)$ is the formula abbreviated by
-$\varphi_e(v)\downarrow$ \cite[p.~645]{DPM91}. The dot in the added-axiom notation
-specifies substitution of the numeral for $x$ into this fixed formula.
+selects, at $z=n$, the finitely many axiom codes at most $n$.
 
-With the parameter arguments ordered as in
-\eqref{eq:beta-e}, Di Paola and Montagna's abbreviation is
+Fix a program index $e$ and a primitive recursive computation
+predicate $\mathcal T$. The convergence formula
+\begin{equation}\label{eq:theta}
+ \theta_e(v)\defeq\exists y\,\mathcal T(\bn e,v,y),
+\end{equation}
+abbreviated by $\varphi_e(v)\downarrow$, says that program $e$
+halts on input $v$. For $m\in\N$, the code of $\theta_e(\bn m)$
+is the value at $x=m$ of
+\begin{equation}\label{eq:qtheta}
+ q_{\theta_e}(x)\defeq
+ \Sb\bigl(\quo{\theta_e(v)};\quo v;\Num(x)\bigr).
+\end{equation}
+Thus
+\begin{equation}\label{eq:beta-e}
+ \beta_e(z,x;u)\defeq
+ \bigl(\alpha(u)\land u\leq z\bigr)\lor u=q_{\theta_e}(x)
+\end{equation}
+selects, at $z=n$ and $x=m$, the bounded axiom set together with
+the single sentence $\theta_e(\bn m)$.
+
+Di Paola and Montagna's notation \cite[p.~646]{DPM91} means
 \begin{equation}\label{eq:dpm}
  \Con_{\alpha\upharpoonright\bn n+\varphi_e(\dot x)\downarrow}
    \defeq\Con_{\beta_e(\bn n,x;\cdot)}.
 \end{equation}
-The restriction uses $u\leq z$, including the endpoint. The bounded
-axiom numeration and the consistency abbreviation occur on p.~646 of
-\cite{DPM91}. Their condition~(ii), p.~648, has the quantifier pattern
-\begin{equation}\label{eq:dpm-ii}
- (\forall n\in\N)\qquad
- T\vdash\forall x\,
-   \Con_{\alpha\upharpoonright\bn n+\varphi_e(\dot x)\downarrow}.
-\end{equation}
-The quantification over $n$ is external: a separate theorem is asserted
-for each standard finite bound. The quantifier $\forall x$ is inside
-each theorem. For each fixed $n$, the formula concerns consistency of
-the bounded fragment together with one convergence instance, as that
-instance varies with $x$.
+At $x=m$, this formula asserts that no contradiction is derivable
+from the axioms with codes at most $n$ together with the convergence
+sentence $\varphi_e(\bn m)\downarrow$. The dot marks the numeral
+substitution used to compute the added axiom's code; $x$ remains
+a free parameter of the consistency formula.
 
 {\footnotesize
 \begin{thebibliography}{99}
@@ -3532,3 +3526,4 @@ The Journal of Symbolic Logic \textbf{56}, no.~2 (1991), 643--660.
 }
 
 \end{document}
+
